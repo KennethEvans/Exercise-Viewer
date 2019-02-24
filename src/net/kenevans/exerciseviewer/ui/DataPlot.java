@@ -1,4 +1,4 @@
-package net.kenevans.stlviewer.ui;
+package net.kenevans.exerciseviewer.ui;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -24,9 +24,9 @@ import org.jfree.data.general.Series;
 import org.jfree.data.time.TimeSeriesCollection;
 
 import net.kenevans.core.utils.Utils;
-import net.kenevans.stlviewer.model.IConstants;
-import net.kenevans.stlviewer.model.STLFileModel;
-import net.kenevans.stlviewer.preferences.Settings;
+import net.kenevans.exerciseviewer.model.IConstants;
+import net.kenevans.exerciseviewer.model.GpxFileModel;
+import net.kenevans.exerciseviewer.preferences.Settings;
 
 /*
  * Created on Jul 29, 2012
@@ -34,11 +34,11 @@ import net.kenevans.stlviewer.preferences.Settings;
  */
 
 /**
- * STLPlot handles plotting for the STLViewer.
+ * DataPlot handles plotting for the ExerciseViewer.
  * 
  * @author Kenneth Evans, Jr.
  */
-public class STLPlot implements IConstants
+public class DataPlot implements IConstants
 {
     // /** Default value for the range maximum. */
     // private static final double YMAX = 160;
@@ -56,8 +56,8 @@ public class STLPlot implements IConstants
     /** The ChartPanel for the chart. */
     private ChartPanel chartPanel;
 
-    /** The STLViewer that contains this plot. */
-    private STLViewer viewer;
+    /** The ExerciseViewer that contains this plot. */
+    private ExerciseViewer viewer;
 
     /** The subtitle */
     private TextTitle subTitle;
@@ -70,7 +70,7 @@ public class STLPlot implements IConstants
     private JCheckBoxMenuItem speedVisibleItem;
     private JCheckBoxMenuItem eleVisibleItem;
 
-    public STLPlot(STLViewer viewer) {
+    public DataPlot(ExerciseViewer viewer) {
         this.viewer = viewer;
     }
 
@@ -344,7 +344,7 @@ public class STLPlot implements IConstants
     public void reset() {
         // Clear the plot
         clearPlot();
-        STLFileModel model = null;
+        GpxFileModel model = null;
         if(viewer != null) {
             model = viewer.getModel();
         }
@@ -436,7 +436,7 @@ public class STLPlot implements IConstants
      * 
      * @param model
      */
-    public void addModelToChart(STLFileModel model) {
+    public void addModelToChart(GpxFileModel model) {
         if(dataTypes == null) {
             Utils.errMsg("No data types defined");
             return;

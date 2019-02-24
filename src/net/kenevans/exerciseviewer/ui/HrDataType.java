@@ -1,13 +1,13 @@
-package net.kenevans.stlviewer.ui;
+package net.kenevans.exerciseviewer.ui;
 
 import java.awt.Color;
 import java.awt.Paint;
 
-import net.kenevans.stlviewer.preferences.Settings;
-
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYAreaRenderer;
 import org.jfree.data.time.TimeSeriesCollection;
+
+import net.kenevans.exerciseviewer.preferences.Settings;
 
 /*
  * Created on Jul 17, 2014
@@ -60,7 +60,7 @@ public class HrDataType extends DataType
     /*
      * (non-Javadoc)
      * 
-     * @see net.kenevans.stlviewer.ui.DataType#createDataset(long[], double[])
+     * @see net.kenevans.exerciseviewer.ui.DataType#createDataset(long[], double[])
      */
     @Override
     public TimeSeriesCollection createDataset(long[] timeVals, double[] yVals) {

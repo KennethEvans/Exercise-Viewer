@@ -1,10 +1,10 @@
-package net.kenevans.stlviewer.ui;
+package net.kenevans.exerciseviewer.ui;
 
 import java.awt.Paint;
 import java.util.Date;
 
-import net.kenevans.stlviewer.model.IConstants;
-import net.kenevans.stlviewer.preferences.Settings;
+import net.kenevans.exerciseviewer.model.IConstants;
+import net.kenevans.exerciseviewer.preferences.Settings;
 
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.AbstractXYItemRenderer;

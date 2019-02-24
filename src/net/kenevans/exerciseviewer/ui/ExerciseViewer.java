@@ -1,4 +1,4 @@
-package net.kenevans.stlviewer.ui;
+package net.kenevans.exerciseviewer.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
-import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,23 +39,22 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.jfree.ui.RefineryUtilities;
+
 import net.kenevans.core.utils.AboutBoxPanel;
 import net.kenevans.core.utils.ImageUtils;
 import net.kenevans.core.utils.Utils;
-import net.kenevans.stlviewer.database.STLDatabase;
-import net.kenevans.stlviewer.model.IConstants;
-import net.kenevans.stlviewer.model.STLFileModel;
-import net.kenevans.stlviewer.preferences.PreferencesDialog;
-import net.kenevans.stlviewer.preferences.Settings;
-
-import org.jfree.ui.RefineryUtilities;
+import net.kenevans.exerciseviewer.model.IConstants;
+import net.kenevans.exerciseviewer.model.GpxFileModel;
+import net.kenevans.exerciseviewer.preferences.PreferencesDialog;
+import net.kenevans.exerciseviewer.preferences.Settings;
 
 /**
- * STLViewer is a viewer to view ECG fileNames from the MD100A ECG Monitor.
+ * ExerciseViewer is a viewer to view ECG fileNames from the MD100A ECG Monitor.
  * 
  * @author Kenneth Evans, Jr.
  */
-public class STLViewer extends JFrame implements IConstants
+public class ExerciseViewer extends JFrame implements IConstants
 {
     private static final String AUTHOR = "Written by Kenneth Evans, Jr.";
     private static final String COPYRIGHT = "Copyright (c) 2014-2019 Kenneth Evans";
@@ -71,17 +69,17 @@ public class STLViewer extends JFrame implements IConstants
     public static final String LS = System.getProperty("line.separator");
 
     private Settings settings;
-
+    private PreferencesDialog preferencesDialog;;
     /** Keeps the last-used path for the file open dialog. */
     public String defaultOpenPath;
     /** Keeps the last-used path for the file save dialog. */
     public String defaultSavePath;
 
     /** The model for this user interface. */
-    private STLFileModel model;
+    private GpxFileModel model;
 
-    /** The stlPlot for this user interface. */
-    private STLPlot stlPlot;
+    /** The dataPlot for this user interface. */
+    private DataPlot dataPlot;
 
     // User interface controls (Many do not need to be global)
     private Container contentPane = this.getContentPane();
@@ -103,11 +101,11 @@ public class STLViewer extends JFrame implements IConstants
     private String curFileName;
 
     /**
-     * STLViewer constructor.
+     * ExerciseViewer constructor.
      */
-    public STLViewer() {
+    public ExerciseViewer() {
         loadUserPreferences();
-        stlPlot = new STLPlot(this);
+        dataPlot = new DataPlot(this);
         uiInit();
         findFileNames(settings.getDefaultDirectory());
     }
@@ -177,18 +175,18 @@ public class STLViewer extends JFrame implements IConstants
 
         // Chart panel
         displayPanel.setLayout(new BorderLayout());
-        stlPlot.createChart();
+        dataPlot.createChart();
         // Not necessary to set this, it will adjust per the divider location
         // and frame size
-        // stlPlot.getChartPanel().setPreferredSize(
+        // dataPlot.getChartPanel().setPreferredSize(
         // new Dimension(CHART_WIDTH, CHART_HEIGHT));
-        stlPlot.getChartPanel().setDomainZoomable(true);
-        stlPlot.getChartPanel().setRangeZoomable(true);
+        dataPlot.getChartPanel().setDomainZoomable(true);
+        dataPlot.getChartPanel().setRangeZoomable(true);
         javax.swing.border.CompoundBorder compoundborder = BorderFactory
             .createCompoundBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4),
                 BorderFactory.createEtchedBorder());
-        stlPlot.getChartPanel().setBorder(compoundborder);
-        displayPanel.add(stlPlot.getChartPanel());
+        dataPlot.getChartPanel().setBorder(compoundborder);
+        displayPanel.add(dataPlot.getChartPanel());
 
         // List panel
         listScrollPane = new JScrollPane(list);
@@ -312,24 +310,6 @@ public class STLViewer extends JFrame implements IConstants
         menu.setText("Tools");
         menuBar.add(menu);
 
-        menuItem = new JMenuItem();
-        menuItem.setText("Create/Recreate Database");
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                createDatabase();
-            }
-        });
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem();
-        menuItem.setText("Add CSV file to Database...");
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                addCsvFileToDatabase();
-            }
-        });
-        menu.add(menuItem);
-
         separator = new JSeparator();
         menu.add(separator);
 
@@ -388,7 +368,7 @@ public class STLViewer extends JFrame implements IConstants
 
             // Set the icon
             ImageUtils.setIconImageFromResource(this,
-                "/resources/STLViewer32x32.png");
+                "/resources/ExerciseViewer32x32.png");
 
             // Has to be done here. The menus are not part of the JPanel.
             initMenus();
@@ -482,9 +462,9 @@ public class STLViewer extends JFrame implements IConstants
                 Cursor oldCursor = getCursor();
                 try {
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    model = new STLFileModel(file.getPath());
-                    stlPlot.clearPlot();
-                    stlPlot.addModelToChart(model);
+                    model = new GpxFileModel(file.getPath());
+                    dataPlot.clearPlot();
+                    dataPlot.addModelToChart(model);
                     updateInfoText(model);
                 } catch(Exception ex) {
                     String msg = "Error loading file: " + file.getPath();
@@ -540,50 +520,6 @@ public class STLViewer extends JFrame implements IConstants
     }
 
     /**
-     * Creates or recreates an empty data base.
-     */
-    public void createDatabase() {
-        Connection conn = STLDatabase
-            .createDatabase(DATABASE_URL_PREFIX + settings.getDatabase());
-        if(conn != null) {
-            STLDatabase.closeConnection(conn);
-            Utils.infoMsg("Empty database created");
-        }
-    }
-
-    /**
-     * Adds a CSV file to the database
-     */
-    public void addCsvFileToDatabase() {
-        // First select the file
-        JFileChooser chooser = new JFileChooser();
-        if(defaultOpenPath != null) {
-            chooser.setCurrentDirectory(new File(defaultOpenPath));
-        }
-        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-            public boolean accept(File file) {
-                return file.isDirectory() || file.getName().endsWith(".csv");
-            }
-
-            public String getDescription() {
-                return "Comma Separated Values (CSV)";
-            }
-        });
-        int result = chooser.showOpenDialog(this);
-        if(result == JFileChooser.APPROVE_OPTION) {
-            // Save the selected path for next time
-            defaultOpenPath = chooser.getSelectedFile().getParentFile()
-                .getPath();
-            // Process the file
-            File file = chooser.getSelectedFile();
-            Connection conn = STLDatabase
-                .getConnection(DATABASE_URL_PREFIX + settings.getDatabase());
-            STLDatabase.addToDatabase(conn, file);
-            STLDatabase.closeConnection(conn);
-        }
-    }
-
-    /**
      * Shows model information.
      */
     private void showInfo() {
@@ -605,16 +541,18 @@ public class STLViewer extends JFrame implements IConstants
      * Brings up a dialog to set preferences.
      */
     private void setPreferences() {
-        PreferencesDialog dialog = new PreferencesDialog(this, this);
+        if(preferencesDialog == null) {
+            preferencesDialog = new PreferencesDialog(this, this);
+        }
         // For modal, use this and dialog.showDialog() instead of
         // dialog.setVisible(true)
         // dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        URL url = STLViewer.class.getResource("/resources/STLViewer32x32.png");
+        preferencesDialog.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        URL url = ExerciseViewer.class.getResource("/resources/ExerciseViewer32x32.png");
         if(url != null) {
-            dialog.setIconImage(new ImageIcon(url).getImage());
+            preferencesDialog.setIconImage(new ImageIcon(url).getImage());
         }
-        dialog.setVisible(true);
+        preferencesDialog.setVisible(true);
         // This only returns on Cancel and always returns true. All actions are
         // done from the dialog.
         // dialog.showDialog();
@@ -631,7 +569,7 @@ public class STLViewer extends JFrame implements IConstants
 
         // Copy from the given settings.
         this.settings.copyFrom(settings);
-        stlPlot.reset();
+        dataPlot.reset();
         if(!this.settings.getDefaultDirectory().equals(defaultDirectoryOld)) {
             findFileNames(settings.getDefaultDirectory());
         }
@@ -684,38 +622,13 @@ public class STLViewer extends JFrame implements IConstants
      * 
      * @param model
      */
-    public void updateInfoText(STLFileModel model) {
+    public void updateInfoText(GpxFileModel model) {
         String info = "";
         if(model != null) {
             info += model.getInfo() + LS;
         }
-        info += getDataBaseInfo(model.getFileName());
         infoTextArea.setText(info);
         infoTextArea.setCaretPosition(0);
-    }
-
-    /**
-     * Gets info for the row in the database.
-     * 
-     * @param fileName The filename, which should contain the id for the
-     *            database row.
-     * @return
-     */
-    public String getDataBaseInfo(String fileName) {
-        String info = "";
-        if(fileName == null) {
-            return info;
-        }
-        int start = fileName.lastIndexOf('-');
-        int end = fileName.lastIndexOf('.');
-        if(start == -1 || end == -1 || end <= start) {
-            // No id found
-            return info;
-        }
-        String id = fileName.substring(start + 1, end);
-        String url = DATABASE_URL_PREFIX + settings.getDatabase();
-        info += STLDatabase.getInfoForId(id, url);
-        return info;
     }
 
     /**
@@ -735,7 +648,7 @@ public class STLViewer extends JFrame implements IConstants
     /**
      * @return The value of model.
      */
-    public STLFileModel getModel() {
+    public GpxFileModel getModel() {
         return model;
     }
 
@@ -778,7 +691,7 @@ public class STLViewer extends JFrame implements IConstants
             // Make the job run in the AWT thread
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    STLViewer app = new STLViewer();
+                    ExerciseViewer app = new ExerciseViewer();
                     app.run();
                 }
             });

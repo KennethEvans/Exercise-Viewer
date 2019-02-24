@@ -1,4 +1,4 @@
-package net.kenevans.stlviewer.utils;
+package net.kenevans.exerciseviewer.utils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

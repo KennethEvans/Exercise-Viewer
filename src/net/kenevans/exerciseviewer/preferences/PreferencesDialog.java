@@ -1,4 +1,4 @@
-package net.kenevans.stlviewer.preferences;
+package net.kenevans.exerciseviewer.preferences;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -19,11 +19,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.kenevans.core.utils.Utils;
-import net.kenevans.stlviewer.model.IConstants;
-import net.kenevans.stlviewer.ui.STLViewer;
+import net.kenevans.exerciseviewer.model.IConstants;
+import net.kenevans.exerciseviewer.ui.ExerciseViewer;
 
 /**
- * PreferencesDialog is a dialog to set the Preferences for STLViewer. It only
+ * PreferencesDialog is a dialog to set the Preferences for ExerciseViewer. It only
  * returns after Cancel. It can save the values to the preference store or set
  * them in the viewer. In either case it remains visible.
  * 
@@ -37,14 +37,13 @@ import net.kenevans.stlviewer.ui.STLViewer;
 public class PreferencesDialog extends JDialog implements IConstants
 {
     private static final long serialVersionUID = 1L;
-    private STLViewer viewer;
+    private ExerciseViewer viewer;
     /**
      * The return value. It is always true.
      */
     private boolean ok = true;
 
     JTextField defaultDirText;
-    JTextField dbText;
     JCheckBox hrVisibileCheck;
     JCheckBox hrZonesVisibileCheck;
     JCheckBox speedVisibileCheck;
@@ -75,7 +74,7 @@ public class PreferencesDialog extends JDialog implements IConstants
     /**
      * Constructor
      */
-    public PreferencesDialog(Component parent, STLViewer viewer) {
+    public PreferencesDialog(Component parent, ExerciseViewer viewer) {
         super();
         this.viewer = viewer;
         if(viewer == null) {
@@ -128,7 +127,7 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbc.gridx = 0;
         gbc.gridy = gridy;
         fileGroup.add(label, gbc);
-        
+
         // File JPanel holds the filename and browse button
         JPanel filePanel = new JPanel();
         filePanel.setLayout(new GridBagLayout());
@@ -163,7 +162,7 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbc = (GridBagConstraints)gbcDefault.clone();
         gbc.gridx = 1;
         filePanel.add(button);
-        
+
         // Default database
         gridy++;
         label = new JLabel("Database:");
@@ -172,41 +171,6 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbc.gridx = 0;
         gbc.gridy = gridy;
         fileGroup.add(label, gbc);
-
-        // Database JPanel holds the filename and browse button
-        filePanel = new JPanel();
-        filePanel.setLayout(new GridBagLayout());
-        gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 1;
-        gbc.gridy = gridy;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 100;
-        fileGroup.add(filePanel, gbc);
-
-        dbText = new JTextField(30);
-        dbText.setToolTipText(label.getText());
-        gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 100;
-        filePanel.add(dbText, gbc);
-
-        button = new JButton();
-        button.setText("Browse");
-        button.setToolTipText("Choose the database.");
-        button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent ev) {
-                if(dbText == null) {
-                    return;
-                }
-                String initialDirName = dbText.getText();
-                String dirName = browse(initialDirName);
-                dbText.setText(dirName);
-            }
-        });
-        gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 1;
-        filePanel.add(button);
 
         // HR Group /////////////////////////////////////////////////////////
         JPanel hrGroup = new JPanel();
@@ -790,7 +754,7 @@ public class PreferencesDialog extends JDialog implements IConstants
 
         button = new JButton();
         button.setText("Use Defaults");
-        button.setToolTipText("Set to the STLViewer default values.");
+        button.setToolTipText("Set to the ExerciseViewer default values.");
         button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent ev) {
                 Settings settings = new Settings();
@@ -906,8 +870,8 @@ public class PreferencesDialog extends JDialog implements IConstants
             for(int i = 0; i < 6; i++) {
                 intensity = .1 * i + .5;
                 if(useKorvonen) {
-                    zoneVals[i] = (int)Math.round(intensity * (maxHr - restHr)
-                        + restHr);
+                    zoneVals[i] = (int)Math
+                        .round(intensity * (maxHr - restHr) + restHr);
                 } else {
                     zoneVals[i] = (int)Math.round(intensity * maxHr);
                 }
@@ -967,10 +931,6 @@ public class PreferencesDialog extends JDialog implements IConstants
         if(defaultDirText != null) {
             defaultDirText.setText(settings.getDefaultDirectory());
         }
-        if(dbText != null) {
-            dbText.setText(settings.getDatabase());
-        }
-
         if(hrVisibileCheck != null) {
             hrVisibileCheck.setSelected(settings.getHrVisible());
         }
@@ -985,16 +945,16 @@ public class PreferencesDialog extends JDialog implements IConstants
         }
 
         if(hrRavCountText != null) {
-            hrRavCountText.setText(Integer.toString(settings
-                .getHrRollingAvgCount()));
+            hrRavCountText
+                .setText(Integer.toString(settings.getHrRollingAvgCount()));
         }
         if(speedRavCountText != null) {
-            speedRavCountText.setText(Integer.toString(settings
-                .getSpeedRollingAvgCount()));
+            speedRavCountText
+                .setText(Integer.toString(settings.getSpeedRollingAvgCount()));
         }
         if(eleRavCountText != null) {
-            eleRavCountText.setText(Integer.toString(settings
-                .getEleRollingAvgCount()));
+            eleRavCountText
+                .setText(Integer.toString(settings.getEleRollingAvgCount()));
         }
 
         if(zone1ValText != null) {
@@ -1063,19 +1023,18 @@ public class PreferencesDialog extends JDialog implements IConstants
         }
         try {
             settings.setDefaultDirectory(defaultDirText.getText());
-            settings.setDatabase(dbText.getText());
 
             settings.setHrVisible(hrVisibileCheck.isSelected());
             settings.setHrZonesVisible(hrZonesVisibileCheck.isSelected());
             settings.setSpeedVisible(speedVisibileCheck.isSelected());
             settings.setEleVisible(eleVisibileCheck.isSelected());
 
-            settings.setHrRollingAvgCount(Integer.parseInt((hrRavCountText
-                .getText())));
-            settings.setSpeedRollingAvgCount(Integer
-                .parseInt((speedRavCountText.getText())));
-            settings.setEleRollingAvgCount(Integer.parseInt((eleRavCountText
-                .getText())));
+            settings.setHrRollingAvgCount(
+                Integer.parseInt((hrRavCountText.getText())));
+            settings.setSpeedRollingAvgCount(
+                Integer.parseInt((speedRavCountText.getText())));
+            settings.setEleRollingAvgCount(
+                Integer.parseInt((eleRavCountText.getText())));
 
             settings.setZone1Val(Integer.parseInt(zone1ValText.getText()));
             settings.setZone2Val(Integer.parseInt(zone2ValText.getText()));

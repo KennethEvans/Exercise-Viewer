@@ -1,4 +1,4 @@
-package net.kenevans.stlviewer.model;
+package net.kenevans.exerciseviewer.model;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +21,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import net.kenevans.core.utils.Utils;
+import net.kenevans.exerciseviewer.utils.GpxUtils;
 import net.kenevans.gpxcombined.ExtensionsType;
 import net.kenevans.gpxcombined.GpxType;
 import net.kenevans.gpxcombined.Oruxmapsextensions;
@@ -29,7 +30,6 @@ import net.kenevans.gpxcombined.TrkType;
 import net.kenevans.gpxcombined.TrksegType;
 import net.kenevans.gpxcombined.WptType;
 import net.kenevans.gpxcombined.parser.GPXParser;
-import net.kenevans.stlviewer.utils.GpxUtils;
 
 /*
  * Created on Jul 8, 2014
@@ -37,11 +37,11 @@ import net.kenevans.stlviewer.utils.GpxUtils;
  */
 
 /**
- * STLFileModel is a model for STL data.
+ * GpxFileModel is a model for GPX data.
  * 
  * @author Kenneth Evans, Jr.
  */
-public class STLFileModel implements IConstants
+public class GpxFileModel implements IConstants
 {
   private String fileName;
   private GpxType gpx;
@@ -63,7 +63,7 @@ public class STLFileModel implements IConstants
 
   SimpleDateFormat oruxMapsBpmFormatter;
 
-  public STLFileModel(String fileName) {
+  public GpxFileModel(String fileName) {
     this.fileName = fileName;
     try {
       this.gpx = openFile(fileName);
@@ -868,9 +868,9 @@ public class STLFileModel implements IConstants
    * @param args
    */
   public static void main(String[] args) {
-    System.out.println("Starting " + STLFileModel.class.getName());
+    System.out.println("Starting " + GpxFileModel.class.getName());
     System.out.println(FILE_PATH);
-    STLFileModel app = new STLFileModel(FILE_PATH);
+    GpxFileModel app = new GpxFileModel(FILE_PATH);
     // System.out.println(app.getInfo());
     // DEBUG
     // System.out.println();
