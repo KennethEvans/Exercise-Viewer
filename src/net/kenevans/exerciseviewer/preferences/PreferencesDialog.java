@@ -163,15 +163,6 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbc.gridx = 1;
         filePanel.add(button);
 
-        // Default database
-        gridy++;
-        label = new JLabel("Database:");
-        label.setToolTipText("The default database.");
-        gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 0;
-        gbc.gridy = gridy;
-        fileGroup.add(label, gbc);
-
         // HR Group /////////////////////////////////////////////////////////
         JPanel hrGroup = new JPanel();
         hrGroup.setBorder(BorderFactory.createCompoundBorder(
