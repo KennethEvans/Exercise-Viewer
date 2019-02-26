@@ -37,7 +37,8 @@ public interface IConstants
     /** The frame height for the viewer. */
     public static final int FRAME_HEIGHT = 750;
     /** The divider location for the main split pane. */
-    public static final int MAIN_PANE_DIVIDER_LOCATION = 55 * FRAME_HEIGHT / 100;
+    public static final int MAIN_PANE_DIVIDER_LOCATION = 55 * FRAME_HEIGHT
+        / 100;
     /** The divider location for the lower split pane. */
     public static final int LOWER_PANE_DIVIDER_LOCATION = FRAME_WIDTH / 2;
 
@@ -48,11 +49,11 @@ public interface IConstants
      */
     public static final String P_PREFERENCE_NODE = "net/kenevans/exerciseviewer/preferences";
 
-    /*** The preference name for the default directory for finding GPX files. */
-    public static final String P_DEFAULT_DIR = "defaultDir";
-    /*** The default value for the default directory for finding GPX files. */
-    public static final String D_DEFAULT_DIR = "C:/Users/evans/Documents/GPSLink/Polar";
-    
+    /*** The preference name for the locations for finding files. */
+    public static final String P_FILE_LOCATIONS = "fileLocations";
+    /*** The default value for the locations for finding files. */
+    public static final String D_FILE_LOCATIONS = "{}";
+
     /** The number of data types. */
     public static int N_DATA_TYPES = 1;
 
@@ -223,7 +224,5 @@ public interface IConstants
 
     /** The prefix used to represent a boundary in the series name. */
     public static final String BOUNDARY_SERIES_NAME_PREFIX = "HR=";
-
-    public static final String FILE_PATH = D_DEFAULT_DIR + "/" + FILE_NAME;
 
 }

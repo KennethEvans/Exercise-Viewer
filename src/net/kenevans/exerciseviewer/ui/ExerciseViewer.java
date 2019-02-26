@@ -9,11 +9,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -44,8 +46,11 @@ import org.jfree.ui.RefineryUtilities;
 import net.kenevans.core.utils.AboutBoxPanel;
 import net.kenevans.core.utils.ImageUtils;
 import net.kenevans.core.utils.Utils;
-import net.kenevans.exerciseviewer.model.IConstants;
 import net.kenevans.exerciseviewer.model.GpxFileModel;
+import net.kenevans.exerciseviewer.model.IConstants;
+import net.kenevans.exerciseviewer.preferences.FileLocations;
+import net.kenevans.exerciseviewer.preferences.FileLocations.FileLocation;
+import net.kenevans.exerciseviewer.preferences.FileLocations.FilterMode;
 import net.kenevans.exerciseviewer.preferences.PreferencesDialog;
 import net.kenevans.exerciseviewer.preferences.Settings;
 
@@ -64,7 +69,6 @@ public class ExerciseViewer extends JFrame implements IConstants
      * Use this to determine if a file is loaded initially. Useful for
      * development. Not so good for deployment.
      */
-    public static final boolean USE_START_FILE_NAME = false;
     private static final long serialVersionUID = 1L;
     public static final String LS = System.getProperty("line.separator");
 
@@ -107,58 +111,100 @@ public class ExerciseViewer extends JFrame implements IConstants
         loadUserPreferences();
         dataPlot = new DataPlot(this);
         uiInit();
-        findFileNames(settings.getDefaultDirectory());
+        findFileNames(settings.getFileLocations());
     }
 
     /**
-     * Fills the fileNames array with GPX files in the given directory.
+     * Fills the fileNames array with the files in the given FileLocations.
      * 
-     * @param dir The directory in which to look for GPX files.
+     * @param fileLocations
      */
-    void findFileNames(String dirName) {
-        File dir = new File(dirName);
-        if(!dir.exists()) {
-            Utils.errMsg("Does not exist: " + dirName);
+    void findFileNames(FileLocations fileLocations) {
+        if(fileLocations == null) {
             return;
         }
-        if(!dir.isDirectory()) {
-            Utils.errMsg("Not a directory: " + dirName);
+        if(fileLocations.getFileLocations().isEmpty()) {
+            Utils.errMsg("There are no file locations");
             return;
         }
-        File[] files = dir.listFiles(new java.io.FileFilter() {
-            public boolean accept(File file) {
-                if(file.isDirectory()) {
-                    return false;
-                }
-                String ext = Utils.getExtension(file);
-                if(ext == null) {
-                    return false;
-                }
-                return ext.toLowerCase().equals("gpx");
+        String dirName = null;
+        List<File> fileList = new ArrayList<>();
+        for(FileLocation fileLocation : fileLocations.getFileLocations()) {
+            dirName = fileLocation.fileName;
+            File dir = new File(dirName);
+            if(!dir.exists()) {
+                Utils.errMsg("Does not exist: " + dirName);
+                return;
             }
-        });
+            if(!dir.isDirectory()) {
+                Utils.errMsg("Not a directory: " + dirName);
+                return;
+            }
+            File[] files = dir.listFiles(new java.io.FileFilter() {
+                public boolean accept(File file) {
+                    if(file.isDirectory()) {
+                        return false;
+                    }
+                    String ext = Utils.getExtension(file);
+                    if(ext == null) {
+                        return false;
+                    }
+                    return ext.toLowerCase().equals("gpx");
+                }
+            });
+            for(File file : files) {
+                fileList.add(file);
+            }
+        }
 
         // Sort in reverse order
-        List<File> sortedList = Arrays.asList(files);
-        Collections.sort(sortedList, new Comparator<File>() {
+        Collections.sort(fileList, new Comparator<File>() {
             public int compare(File fa, File fb) {
                 if(fa.isDirectory() && !fb.isDirectory()) return -1;
                 if(fb.isDirectory() && !fa.isDirectory()) return 1;
-                // Name in reverse order
-                return (fb.getName().compareTo(fa.getName()));
+                String faName = fa.getName();
+                String fbName = fb.getName();
+                String regex = "(\\d\\d\\d\\d-\\d\\d-\\d\\d)";
+                int index;
+                boolean faFind=false, fbFind=false;
+                Matcher matcher = Pattern.compile(regex).matcher(faName);
+                if(matcher.find()) {
+                    index = faName.indexOf(matcher.group(1));
+                    if(index != -1) {
+                        faFind = true;
+                        faName = faName.substring(index, faName.length());
+                    }
+                    // System.out.println("fa: " + matcher.group(1) + " " +
+                    // faName);
+                }
+                matcher = Pattern.compile(regex).matcher(fbName);
+                if(matcher.find()) {
+                    index = fbName.indexOf(matcher.group(1));
+                    if(index != -1) {
+                        fbFind = true;
+                        fbName = fbName.substring(index, fbName.length());
+                    }
+                    // System.out.println("fb: " + matcher.group(1) + " " +
+                    // fbName);
+                }
+                if(faFind && !fbFind) {
+                    return -1;
+                }
+                if(!faFind && fbFind) {
+                    return 1;
+                }
+                return (fbName.compareTo(faName));
             }
         });
-        // Re-populate the array
-        files = sortedList.toArray(files);
 
         // Make the list of file names
-        int nFiles = files.length;
+        int nFiles = fileList.size();
         fileNames = new String[nFiles];
         if(nFiles <= 0) {
             curFileName = null;
         } else {
             for(int i = 0; i < nFiles; i++) {
-                fileNames[i] = files[i].getPath();
+                fileNames[i] = fileList.get(i).getPath();
             }
             curFileName = fileNames[0];
         }
@@ -277,7 +323,7 @@ public class ExerciseViewer extends JFrame implements IConstants
         menuItem.setText("Set Default Directory...");
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                openDefaultDirectory();
+                openDirectory();
             }
         });
         menu.add(menuItem);
@@ -378,12 +424,6 @@ public class ExerciseViewer extends JFrame implements IConstants
             this.setBounds(20, 20, FRAME_WIDTH, FRAME_HEIGHT);
             RefineryUtilities.centerFrameOnScreen(this);
             this.setVisible(true);
-            if(USE_START_FILE_NAME) {
-                File file = new File(FILE_PATH);
-                if(file.exists()) {
-                    loadFile(file);
-                }
-            }
         } catch(Throwable t) {
             t.printStackTrace();
         }
@@ -411,13 +451,17 @@ public class ExerciseViewer extends JFrame implements IConstants
     /**
      * Brings up a JFileChooser to open a directory.
      */
-    private void openDefaultDirectory() {
+    private void openDirectory() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if(defaultOpenPath != null) {
-            File dir = new File(settings.getDefaultDirectory());
-            chooser.setCurrentDirectory(dir);
-            chooser.setSelectedFile(dir);
+            FileLocations fileLocations = settings.getFileLocations();
+            if(fileLocations.getFileLocations().size() > 0) {
+                File dir = new File(
+                    fileLocations.getFileLocations().get(0).fileName);
+                chooser.setCurrentDirectory(dir);
+                chooser.setSelectedFile(dir);
+            }
         }
         int result = chooser.showOpenDialog(this);
         if(result == JFileChooser.APPROVE_OPTION) {
@@ -429,11 +473,15 @@ public class ExerciseViewer extends JFrame implements IConstants
                 return;
             }
             if(!dir.isDirectory()) {
-                Utils.errMsg("Not a diretory: " + dirName);
+                Utils.errMsg("Not a directory: " + dirName);
                 return;
             }
-            settings.setDefaultDirectory(dirName);
-            findFileNames(settings.getDefaultDirectory());
+            FileLocations newLocations = new FileLocations();
+            // TODO Prompt for which FilterMode
+            newLocations.getFileLocations()
+                .add(new FileLocation(dir.getPath(), FilterMode.GPXTCX));
+            settings.setFileLocations(newLocations);
+            findFileNames(settings.getFileLocations());
         }
     }
 
@@ -441,7 +489,7 @@ public class ExerciseViewer extends JFrame implements IConstants
      * Refreshes the loaded directory.
      */
     private void refresh() {
-        findFileNames(settings.getDefaultDirectory());
+        findFileNames(settings.getFileLocations());
     }
 
     /**
@@ -548,7 +596,8 @@ public class ExerciseViewer extends JFrame implements IConstants
         // dialog.setVisible(true)
         // dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         preferencesDialog.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        URL url = ExerciseViewer.class.getResource("/resources/ExerciseViewer32x32.png");
+        URL url = ExerciseViewer.class
+            .getResource("/resources/ExerciseViewer32x32.png");
         if(url != null) {
             preferencesDialog.setIconImage(new ImageIcon(url).getImage());
         }
@@ -565,13 +614,35 @@ public class ExerciseViewer extends JFrame implements IConstants
      */
     public void onPreferenceReset(Settings settings) {
         // Save old values
-        String defaultDirectoryOld = this.settings.getDefaultDirectory();
+        FileLocations fileLocationsOld = this.settings.getFileLocations();
 
         // Copy from the given settings.
         this.settings.copyFrom(settings);
         dataPlot.reset();
-        if(!this.settings.getDefaultDirectory().equals(defaultDirectoryOld)) {
-            findFileNames(settings.getDefaultDirectory());
+        // Check if the file locations have changed
+        boolean changed = false;
+        if(fileLocationsOld.getFileLocations().size() != this.settings
+            .getFileLocations().getFileLocations().size()) {
+            changed = true;
+        } else {
+            List<FileLocation> oldLocations = fileLocationsOld
+                .getFileLocations();
+            List<FileLocation> newLocations = this.settings.getFileLocations()
+                .getFileLocations();
+            for(int i = 0; i < oldLocations.size(); i++) {
+                if(!oldLocations.get(i).fileName.equals(newLocations.get(i))) {
+                    changed = true;
+                    break;
+                }
+                if(oldLocations.get(i).filterMode != newLocations
+                    .get(i).filterMode) {
+                    changed = true;
+                    break;
+                }
+            }
+        }
+        if(changed) {
+            findFileNames(settings.getFileLocations());
         }
     }
 

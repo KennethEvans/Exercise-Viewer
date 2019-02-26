@@ -1,6 +1,5 @@
 package net.kenevans.exerciseviewer.preferences;
 
-import java.io.File;
 import java.util.prefs.Preferences;
 
 import net.kenevans.core.utils.Utils;
@@ -19,7 +18,7 @@ import net.kenevans.exerciseviewer.ui.ExerciseViewer;
  */
 public class Settings implements IConstants
 {
-    private String defaultDirectory = D_DEFAULT_DIR;
+    private FileLocations fileLocations = new FileLocations();
 
     private boolean hrVisible = D_HR_VISIBILITY;
     private boolean hrZonesVisible = D_HR_ZONES_VISIBILITY;
@@ -54,7 +53,7 @@ public class Settings implements IConstants
      */
     public void loadFromPreferences() {
         Preferences prefs = ExerciseViewer.getUserPreferences();
-        defaultDirectory = prefs.get(P_DEFAULT_DIR, D_DEFAULT_DIR);
+        fileLocations.loadFromPreferences();
 
         hrVisible = prefs.getBoolean(P_HR_VISIBILITY, D_HR_VISIBILITY);
         hrZonesVisible = prefs.getBoolean(P_HR_ZONES_VISIBILITY,
@@ -103,7 +102,7 @@ public class Settings implements IConstants
         try {
             Preferences prefs = ExerciseViewer.getUserPreferences();
 
-            prefs.put(P_DEFAULT_DIR, defaultDirectory);
+            fileLocations.saveToPreferences(true);
 
             prefs.putBoolean(P_HR_VISIBILITY, hrVisible);
             prefs.putBoolean(P_HR_ZONES_VISIBILITY, hrZonesVisible);
@@ -150,36 +149,36 @@ public class Settings implements IConstants
     public boolean checkValues(boolean showErrors) {
         boolean retVal = true;
 
-        // Default directory
-        if(defaultDirectory == null) {
-            if(showErrors) {
-                Utils.errMsg("Value for the default directory is null");
-            }
-            retVal = false;
-        } else {
-            File file = new File(defaultDirectory);
-            if(file == null) {
-                if(showErrors) {
-                    Utils.errMsg("The default directory is invalid");
-                }
-                retVal = false;
-            } else {
-                if(!file.exists()) {
-                    if(showErrors) {
-                        Utils.errMsg("The default directory does not exist");
-                    }
-                    retVal = false;
-                } else {
-                    if(!file.isDirectory()) {
-                        if(showErrors) {
-                            Utils.errMsg(
-                                "The default directory is not a directory");
-                        }
-                        retVal = false;
-                    }
-                }
-            }
-        }
+//        // Default directory
+//        if(defaultDirectory == null) {
+//            if(showErrors) {
+//                Utils.errMsg("Value for the default directory is null");
+//            }
+//            retVal = false;
+//        } else {
+//            File file = new File(defaultDirectory);
+//            if(file == null) {
+//                if(showErrors) {
+//                    Utils.errMsg("The default directory is invalid");
+//                }
+//                retVal = false;
+//            } else {
+//                if(!file.exists()) {
+//                    if(showErrors) {
+//                        Utils.errMsg("The default directory does not exist");
+//                    }
+//                    retVal = false;
+//                } else {
+//                    if(!file.isDirectory()) {
+//                        if(showErrors) {
+//                            Utils.errMsg(
+//                                "The default directory is not a directory");
+//                        }
+//                        retVal = false;
+//                    }
+//                }
+//            }
+//        }
 
         return retVal;
     }
@@ -190,7 +189,7 @@ public class Settings implements IConstants
      * @param settings
      */
     public void copyFrom(Settings settings) {
-        this.defaultDirectory = settings.defaultDirectory;
+        this.fileLocations = new FileLocations(settings.getFileLocations());
 
         this.hrVisible = settings.hrVisible;
         this.hrZonesVisible = settings.hrZonesVisible;
@@ -222,17 +221,17 @@ public class Settings implements IConstants
     }
 
     /**
-     * @return The value of defaultDirectory.
+     * @return The value of fileLocations.
      */
-    public String getDefaultDirectory() {
-        return defaultDirectory;
+    public FileLocations getFileLocations() {
+        return fileLocations;
     }
 
     /**
-     * @param defaultDirectory The new value for defaultDirectory.
+     * @param fileLocations The new value for fileLocations.
      */
-    public void setDefaultDirectory(String defaultDirectory) {
-        this.defaultDirectory = defaultDirectory;
+    public void setFileLocations(FileLocations fileLocations) {
+        this.fileLocations = fileLocations;
     }
 
     /**

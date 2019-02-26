@@ -7,19 +7,27 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import net.kenevans.core.utils.Utils;
 import net.kenevans.exerciseviewer.model.IConstants;
+import net.kenevans.exerciseviewer.preferences.FileLocations.FileLocation;
+import net.kenevans.exerciseviewer.preferences.FileLocations.FilterMode;
 import net.kenevans.exerciseviewer.ui.ExerciseViewer;
 
 /**
@@ -43,7 +51,12 @@ public class PreferencesDialog extends JDialog implements IConstants
      */
     private boolean ok = true;
 
-    JTextField defaultDirText;
+    private FileLocations fileLocations;
+    private String initialFileDir;
+
+    JList<String> fileLocationsList;
+    DefaultListModel<String> fileLocationsModel;
+
     JCheckBox hrVisibileCheck;
     JCheckBox hrZonesVisibileCheck;
     JCheckBox speedVisibileCheck;
@@ -105,6 +118,11 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbcDefault.fill = GridBagConstraints.NONE;
         GridBagConstraints gbc = null;
         int gridy = -1;
+        int gridPanel = -1;
+
+        JLabel label;
+        JButton button;
+        JPanel panel;
 
         // File Group //////////////////////////////////////////////////////
         JPanel fileGroup = new JPanel();
@@ -120,48 +138,72 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbc.weightx = 100;
         contentPane.add(fileGroup, gbc);
 
-        // Default directory
-        JLabel label = new JLabel("Default Directory:");
-        label.setToolTipText("The default directory.");
+        gridPanel++;
+        label = new JLabel("File Locations:");
+        label.setToolTipText("Directories to search for GPX and/or TCX files.");
         gbc = (GridBagConstraints)gbcDefault.clone();
         gbc.gridx = 0;
-        gbc.gridy = gridy;
+        gbc.gridy = gridPanel;
         fileGroup.add(label, gbc);
 
-        // File JPanel holds the filename and browse button
-        JPanel filePanel = new JPanel();
-        filePanel.setLayout(new GridBagLayout());
+        fileLocationsList = new JList<String>();
+        fileLocationsList.setToolTipText(label.getText());
+        fileLocationsList.setVisibleRowCount(4);
         gbc = (GridBagConstraints)gbcDefault.clone();
         gbc.gridx = 1;
-        gbc.gridy = gridy;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 100;
-        fileGroup.add(filePanel, gbc);
+        JScrollPane scrollPane = new JScrollPane(fileLocationsList);
+        fileGroup.add(scrollPane, gbc);
 
-        defaultDirText = new JTextField(30);
-        defaultDirText.setToolTipText(label.getText());
+        // Create a JPanel for the rest
+        gridPanel++;
+        panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
         gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 0;
+        gbc.gridx = 1;
+        gbc.gridy = gridPanel;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 100;
-        filePanel.add(defaultDirText, gbc);
+        fileGroup.add(panel, gbc);
 
-        JButton button = new JButton();
-        button.setText("Browse");
-        button.setToolTipText("Choose the file.");
+        // Add
+        button = new JButton("Add");
+        button.setToolTipText("Add a new filter:path file location.");
         button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent ev) {
-                if(defaultDirText == null) {
-                    return;
-                }
-                String initialDirName = defaultDirText.getText();
-                String dirName = browse(initialDirName);
-                defaultDirText.setText(dirName);
+                add();
             }
         });
         gbc = (GridBagConstraints)gbcDefault.clone();
         gbc.gridx = 1;
-        filePanel.add(button);
+        gbc.weightx = 100;
+        panel.add(button, gbc);
+
+        // Remove
+        button = new JButton("Remove");
+        button.setToolTipText("Remove the selected file location.");
+        button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent ev) {
+                delete();
+            }
+        });
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 2;
+        gbc.weightx = 100;
+        panel.add(button, gbc);
+
+        // Edit
+        button = new JButton("Edit");
+        button.setToolTipText("Edit the selected file location.");
+        button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent ev) {
+                edit();
+            }
+        });
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 3;
+        gbc.weightx = 100;
+        panel.add(button, gbc);
 
         // HR Group /////////////////////////////////////////////////////////
         JPanel hrGroup = new JPanel();
@@ -795,7 +837,7 @@ public class PreferencesDialog extends JDialog implements IConstants
         buttonPanel.add(button);
 
         button = new JButton();
-        button.setText("Cancel");
+        button.setText("Done");
         button.setToolTipText("Close the dialog and do nothing.");
         button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent ev) {
@@ -880,6 +922,108 @@ public class PreferencesDialog extends JDialog implements IConstants
     }
 
     /**
+     * Add a directory to the list.
+     * 
+     * @param ev
+     */
+    private void add() {
+        if(initialFileDir == null) {
+            if(fileLocations != null
+                && !fileLocations.getFileLocations().isEmpty()) {
+                initialFileDir = fileLocations.getFileLocations()
+                    .get(0).fileName;
+            }
+        }
+        String filePath = browse(initialFileDir);
+        if(filePath == null) {
+            return;
+        }
+        // Prompt for FilterType
+        Object selection = JOptionPane.showInputDialog(this,
+            "Choose a filter mode", "Filter Mode", JOptionPane.QUESTION_MESSAGE,
+            null, FilterMode.values(), FilterMode.values()[0]);
+        if(selection == null) {
+            return;
+        }
+        FileLocation newLocation = new FileLocation(filePath,
+            (FilterMode)selection);
+        fileLocations.getFileLocations().add(newLocation);
+        resetFileLocationsModel();
+    }
+
+    /**
+     * Remove a directory from the list.
+     * 
+     * @param ev
+     */
+    private void delete() {
+        int selectedIndex = fileLocationsList.getSelectedIndex();
+        if(selectedIndex < 0) {
+            Utils.errMsg("Nothing selected");
+            return;
+        }
+        fileLocations.getFileLocations().remove(selectedIndex);
+        resetFileLocationsModel();
+    }
+
+    private void edit() {
+        int selectedIndex = fileLocationsList.getSelectedIndex();
+        if(selectedIndex < 0) {
+            Utils.errMsg("Nothing selected");
+            return;
+        }
+        String val = fileLocationsList.getSelectedValue();
+        if(val == null || val.isEmpty()) {
+            Utils.errMsg("Cannot determine selected value");
+            return;
+        }
+        String[] tokens = val.split(", ");
+        if(tokens.length != 2) {
+            Utils.errMsg("Cannot determine filter mode and path");
+            return;
+        }
+        FileLocation fileLocation = fileLocations.getFileLocations()
+            .get(selectedIndex);
+        FilterMode filterMode = fileLocation.filterMode;
+        String path = fileLocation.fileName;
+
+        JComboBox<FilterMode> filterModeCombo = new JComboBox<>(
+            FilterMode.values());
+        filterModeCombo.setSelectedItem(filterMode);
+        JTextField pathText = new JTextField();
+        if(path != null && !path.isEmpty()) {
+            pathText.setText(path);
+        }
+        Object[] message = {"FilterMode:", filterModeCombo, "Path:", pathText};
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Edit",
+            JOptionPane.OK_CANCEL_OPTION);
+        if(option != JOptionPane.OK_OPTION) {
+            return;
+        }
+        fileLocation.filterMode = (FilterMode)filterModeCombo.getSelectedItem();
+        fileLocation.fileName = pathText.getText();
+        resetFileLocationsModel();
+    }
+
+    /**
+     * Convenience method to reset the fileLocationsModel.
+     */
+    private void resetFileLocationsModel() {
+        fileLocationsModel = new DefaultListModel<String>();
+        if(fileLocations != null
+            && !fileLocations.getFileLocations().isEmpty()) {
+            List<FileLocation> fileLocationsList = fileLocations
+                .getFileLocations();
+            for(FileLocation fileLocation : fileLocationsList) {
+                fileLocationsModel.addElement(
+                    fileLocation.filterMode + ", " + fileLocation.fileName);
+            }
+        }
+        fileLocationsList.setModel(fileLocationsModel);
+    }
+
+    /**
      * Brings up a JFileChooser to choose a directory.
      */
     private String browse(String initialDirName) {
@@ -919,8 +1063,9 @@ public class PreferencesDialog extends JDialog implements IConstants
         if(viewer == null) {
             return;
         }
-        if(defaultDirText != null) {
-            defaultDirText.setText(settings.getDefaultDirectory());
+        if(fileLocationsList != null) {
+            fileLocations = settings.getFileLocations();
+            resetFileLocationsModel();
         }
         if(hrVisibileCheck != null) {
             hrVisibileCheck.setSelected(settings.getHrVisible());
@@ -1013,7 +1158,7 @@ public class PreferencesDialog extends JDialog implements IConstants
             return false;
         }
         try {
-            settings.setDefaultDirectory(defaultDirText.getText());
+            settings.setFileLocations(new FileLocations(fileLocations));
 
             settings.setHrVisible(hrVisibileCheck.isSelected());
             settings.setHrZonesVisible(hrZonesVisibileCheck.isSelected());
