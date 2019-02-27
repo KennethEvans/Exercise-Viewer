@@ -48,6 +48,8 @@ import net.kenevans.core.utils.ImageUtils;
 import net.kenevans.core.utils.Utils;
 import net.kenevans.exerciseviewer.model.GpxFileModel;
 import net.kenevans.exerciseviewer.model.IConstants;
+import net.kenevans.exerciseviewer.model.IFileModel;
+import net.kenevans.exerciseviewer.model.TcxFileModel;
 import net.kenevans.exerciseviewer.preferences.FileLocations;
 import net.kenevans.exerciseviewer.preferences.FileLocations.FileLocation;
 import net.kenevans.exerciseviewer.preferences.FileLocations.FilterMode;
@@ -80,7 +82,7 @@ public class ExerciseViewer extends JFrame implements IConstants
     public String defaultSavePath;
 
     /** The model for this user interface. */
-    private GpxFileModel model;
+    private IFileModel model;
 
     /** The dataPlot for this user interface. */
     private DataPlot dataPlot;
@@ -149,7 +151,14 @@ public class ExerciseViewer extends JFrame implements IConstants
                     if(ext == null) {
                         return false;
                     }
-                    return ext.toLowerCase().equals("gpx");
+                    if(fileLocation.filterMode == FilterMode.GPX) {
+                        return ext.toLowerCase().equals("gpx");
+                    }
+                    if(fileLocation.filterMode == FilterMode.TCX) {
+                        return ext.toLowerCase().equals("tcx");
+                    }
+                    return ext.toLowerCase().equals("gpx")
+                        || ext.toLowerCase().equals("tcx");
                 }
             });
             for(File file : files) {
@@ -166,7 +175,7 @@ public class ExerciseViewer extends JFrame implements IConstants
                 String fbName = fb.getName();
                 String regex = "(\\d\\d\\d\\d-\\d\\d-\\d\\d)";
                 int index;
-                boolean faFind=false, fbFind=false;
+                boolean faFind = false, fbFind = false;
                 Matcher matcher = Pattern.compile(regex).matcher(faName);
                 if(matcher.find()) {
                     index = faName.indexOf(matcher.group(1));
@@ -510,7 +519,12 @@ public class ExerciseViewer extends JFrame implements IConstants
                 Cursor oldCursor = getCursor();
                 try {
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    model = new GpxFileModel(file.getPath());
+                    String ext = Utils.getExtension(file);
+                    if(ext.toLowerCase().equals("gpx")) {
+                        model = new GpxFileModel(file.getPath());
+                    } else if(ext.toLowerCase().equals("tcx")) {
+                        model = new TcxFileModel(file.getPath());
+                    }
                     dataPlot.clearPlot();
                     dataPlot.addModelToChart(model);
                     updateInfoText(model);
@@ -693,7 +707,7 @@ public class ExerciseViewer extends JFrame implements IConstants
      * 
      * @param model
      */
-    public void updateInfoText(GpxFileModel model) {
+    public void updateInfoText(IFileModel model) {
         String info = "";
         if(model != null) {
             info += model.getInfo() + LS;
@@ -719,7 +733,7 @@ public class ExerciseViewer extends JFrame implements IConstants
     /**
      * @return The value of model.
      */
-    public GpxFileModel getModel() {
+    public IFileModel getModel() {
         return model;
     }
 

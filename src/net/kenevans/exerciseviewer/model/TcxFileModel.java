@@ -2,50 +2,42 @@ package net.kenevans.exerciseviewer.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import net.kenevans.core.utils.Utils;
 import net.kenevans.exerciseviewer.utils.GpxUtils;
 import net.kenevans.exerciseviewer.utils.TcxGpxUtils;
-import net.kenevans.gpxcombined.ExtensionsType;
-import net.kenevans.gpxcombined.GpxType;
-import net.kenevans.gpxcombined.Oruxmapsextensions;
-import net.kenevans.gpxcombined.TrackPointExtensionT;
-import net.kenevans.gpxcombined.TrkType;
-import net.kenevans.gpxcombined.TrksegType;
-import net.kenevans.gpxcombined.WptType;
-import net.kenevans.gpxcombined.parser.GPXParser;
+import net.kenevans.trainingcenterdatabasev2.ActivityLapT;
+import net.kenevans.trainingcenterdatabasev2.ActivityListT;
+import net.kenevans.trainingcenterdatabasev2.ActivityT;
+import net.kenevans.trainingcenterdatabasev2.HeartRateInBeatsPerMinuteT;
+import net.kenevans.trainingcenterdatabasev2.PositionT;
+import net.kenevans.trainingcenterdatabasev2.TrackT;
+import net.kenevans.trainingcenterdatabasev2.TrackpointT;
+import net.kenevans.trainingcenterdatabasev2.TrainingCenterDatabaseT;
+import net.kenevans.trainingcenterdatabasev2.parser.TCXParser;
 
 /*
- * Created on Jul 8, 2014
+ * Created on February 25, 2019
  * By Kenneth Evans, Jr.
  */
 
 /**
- * GpxFileModel is a model for GPX data.
+ * TcxFileModel is a model for TCX data.
  * 
  * @author Kenneth Evans, Jr.
  */
-public class GpxFileModel implements IFileModel, IConstants
+public class TcxFileModel implements IFileModel, IConstants
 {
     private String fileName;
-    private GpxType gpx;
+    private TrainingCenterDatabaseT tcx;
     private long[] hrTimeVals;
     private double[] hrVals;
     private long[] speedTimeVals;
@@ -62,26 +54,13 @@ public class GpxFileModel implements IFileModel, IConstants
     private long endHrTime;
     private double distance;
 
-    SimpleDateFormat oruxMapsBpmFormatter;
-
-    public GpxFileModel(String fileName) {
+    public TcxFileModel(String fileName) {
         this.fileName = fileName;
         try {
-            this.gpx = openFile(fileName);
+            this.tcx = openFile(fileName);
         } catch(Exception ex) {
             ex.printStackTrace();
             Utils.excMsg("Error reading " + fileName, ex);
-        }
-
-        // Create binder for marshalling
-        // net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT
-        Class<net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT> trackPointExtensionTClass = net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT.class;
-        Binder<Node> binder = null;
-        try {
-            JAXBContext jc = JAXBContext.newInstance(trackPointExtensionTClass);
-            binder = jc.createBinder();
-        } catch(JAXBException ex) {
-            binder = null;
         }
 
         ArrayList<Long> timeValsArray = new ArrayList<Long>();
@@ -90,50 +69,36 @@ public class GpxFileModel implements IFileModel, IConstants
         ArrayList<Double> eleValsArray = new ArrayList<Double>();
         ArrayList<Long> hrTimeValsArray = new ArrayList<Long>();
         ArrayList<Double> hrValsArray = new ArrayList<Double>();
-        BigDecimal bdVal;
-        String bpm;
-        double val;
-        long time;
-        ExtensionsType extensions;
 
-        Oruxmapsextensions oruxMapsExt;
-        boolean usingOruxMapBpm = false;
-        boolean res;
+        // TCX types
+        ActivityListT activities;
+        List<ActivityT> activityList;
+        List<ActivityLapT> lapList;
+        List<TrackT> trackList;
+        List<TrackpointT> trackpointList;
+        PositionT position;
+        HeartRateInBeatsPerMinuteT hrBpm;
+        Short hr;
         XMLGregorianCalendar xgcal;
         GregorianCalendar gcal;
 
-        oruxMapsBpmFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",
-            Locale.US);
-        oruxMapsBpmFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-
         // Get the tracks
+        long time;
         long lastTimeValue = -1;
-        List<TrkType> tracks = gpx.getTrk();
-        for(TrkType track : tracks) {
+        nTracks = 0;
+        nSegments = 0;
+        nTrackPoints = 0;
+        nHrValues = 0;
+
+        // Activities (Correspond to a track)
+        activities = tcx.getActivities();
+        // Loop over activities
+        activityList = activities.getActivity();
+        for(ActivityT activity : activityList) {
             nTracks++;
-            // Check for an OruxMaps extension
-            usingOruxMapBpm = false;
-            extensions = track.getExtensions();
-            if(extensions != null) {
-                List<Object> objects = extensions.getAny();
-                for(Object object : objects) {
-                    oruxMapsExt = null;
-                    if(object instanceof Oruxmapsextensions) {
-                        oruxMapsExt = (Oruxmapsextensions)object;
-                        bpm = oruxMapsExt.getBpm();
-                        if(bpm != null && bpm.length() > 0) {
-                            res = getHrFromOruxMapsBpm(bpm, hrValsArray,
-                                hrTimeValsArray);
-                            if(res) {
-                                usingOruxMapBpm = true;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-            List<TrksegType> trackSegments = track.getTrkseg();
-            for(TrksegType trackSegment : trackSegments) {
+            // Loop over laps (Correspond to a track segment(s))
+            lapList = activity.getLap();
+            for(ActivityLapT lap : lapList) {
                 nSegments++;
                 if(nSegments > 1) {
                     // Use NaN to make a break between segments but don't count
@@ -149,117 +114,72 @@ public class GpxFileModel implements IFileModel, IConstants
                 double prevTime = -1;
                 double deltaTime;
                 double lat = 0, lon = 0, prevLat = 0, prevLon = 0;
-                List<WptType> trackPoints = trackSegment.getTrkpt();
-                for(WptType tpt : trackPoints) {
-                    nTrackPoints++;
-                    xgcal = tpt.getTime();
-                    gcal = xgcal.toGregorianCalendar(
-                        TimeZone.getTimeZone("GMT"), null, null);
-                    // Consider gcal.getTimeInMillis()
-                    time = gcal.getTime().getTime();
-                    if(time < startTime) {
-                        startTime = time;
-                    }
-                    if(time > endTime) {
-                        endTime = time;
-                    }
-                    timeValsArray.add(time);
-                    // Speed
-                    lat = tpt.getLat().doubleValue();
-                    lon = tpt.getLon().doubleValue();
-                    if(prevTime != -1) {
-                        // Should be the second track point
-                        deltaLength = GpxUtils.greatCircleDistance(prevLat,
-                            prevLon, lat, lon);
-                        distance += deltaLength;
-                        deltaTime = time - prevTime;
-                        speed = deltaTime > 0 ? 1000. * deltaLength / deltaTime
-                            : 0;
-                        // Convert from m/sec to mi/hr
-                        speedValsArray
-                            .add(speed * GpxUtils.M2MI / GpxUtils.SEC2HR);
-                        speedTimeValsArray
-                            .add(time - Math.round(.5 * deltaTime));
-                    }
-                    prevTime = time;
-                    prevLat = lat;
-                    prevLon = lon;
-                    // Ele
-                    bdVal = tpt.getEle();
-                    // Convert from m to ft
-                    if(bdVal != null) {
-                        eleValsArray.add(bdVal.doubleValue() * GpxUtils.M2FT);
-                    } else {
-                        eleValsArray.add(0.0);
-                    }
-                    // Check extensions for HR
-                    extensions = tpt.getExtensions();
-                    if(!usingOruxMapBpm && extensions != null) {
-                        List<Object> objects = extensions.getAny();
-                        for(Object object : objects) {
-                            // System.out.println(object + " class=" +
-                            // object.getClass());
-                            if(object instanceof JAXBElement<?>) {
-                                JAXBElement<?> element = (JAXBElement<?>)object;
-                                if(element != null && element
-                                    .getValue() instanceof TrackPointExtensionT) {
-                                    TrackPointExtensionT trackPointExt = (TrackPointExtensionT)element
-                                        .getValue();
-                                    if(trackPointExt != null) {
-                                        val = trackPointExt.getHr();
-                                        hrValsArray.add(val);
-                                        hrTimeValsArray.add(time);
-                                        lastTimeValue = time;
-                                        if(time < startHrTime) {
-                                            startHrTime = time;
-                                        }
-                                        if(time > endHrTime) {
-                                            endHrTime = time;
-                                        }
-                                        nHrValues++;
-                                        // System.out.println(val + " " +
-                                        // date.getTime());
-                                        break;
-                                    }
-                                }
-                            } else if(object instanceof Node) {
-                                Node node = (Node)object;
-                                if(node.getNodeName().contains(
-                                    "trackPointExtensionT") && binder != null) {
-                                    JAXBElement<net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT> element = null;
-                                    try {
-                                        element = binder.unmarshal(node,
-                                            trackPointExtensionTClass);
-                                    } catch(JAXBException ex) {
-                                        System.out.println("Cannot parse "
-                                            + node.getNodeName());
-                                    }
-                                    if(element != null) {
-                                        net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT trackPointExt = (net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT)element
-                                            .getValue();
-                                        if(trackPointExt != null) {
-                                            val = trackPointExt.getHr();
-                                            hrValsArray.add(val);
-                                            hrTimeValsArray.add(time);
-                                            lastTimeValue = time;
-                                            if(time < startHrTime) {
-                                                startHrTime = time;
-                                            }
-                                            if(time > endHrTime) {
-                                                endHrTime = time;
-                                            }
-                                            nHrValues++;
-                                            // System.out.println(val + " " +
-                                            // date.getTime());
-                                            break;
-                                        }
-                                    }
-                                }
+                Double ele;
+                // Loop over tracks
+                trackList = lap.getTrack();
+                for(TrackT track : trackList) {
+                    trackpointList = track.getTrackpoint();
+                    for(TrackpointT trackPoint : trackpointList) {
+                        nTrackPoints++;
+                        xgcal = trackPoint.getTime();
+                        gcal = xgcal.toGregorianCalendar(
+                            TimeZone.getTimeZone("GMT"), null, null);
+                        // Consider gcal.getTimeInMillis()
+                        time = gcal.getTime().getTime();
+                        if(time < startTime) {
+                            startTime = time;
+                        }
+                        if(time > endTime) {
+                            endTime = time;
+                        }
+                        timeValsArray.add(time);
+                        // Speed
+                        position = trackPoint.getPosition();
+                        if(position != null) {
+                            lat = position.getLatitudeDegrees();
+                            lon = position.getLongitudeDegrees();
+                            if(prevTime != -1) {
+                                // Should be the second track point
+                                deltaLength = GpxUtils.greatCircleDistance(
+                                    prevLat, prevLon, lat, lon);
+                                distance += deltaLength;
+                                deltaTime = time - prevTime;
+                                speed = deltaTime > 0
+                                    ? 1000. * deltaLength / deltaTime
+                                    : 0;
+                                // Convert from m/sec to mi/hr
+                                speedValsArray.add(
+                                    speed * GpxUtils.M2MI / GpxUtils.SEC2HR);
+                                speedTimeValsArray
+                                    .add(time - Math.round(.5 * deltaTime));
                             }
+                            prevTime = time;
+                            prevLat = lat;
+                            prevLon = lon;
+                        }
+                        ele = trackPoint.getAltitudeMeters();
+                        if(ele != null) {
+                            eleValsArray.add(ele * GpxUtils.M2FT);
+                        } else {
+                            eleValsArray.add(0.0);
+                        }
+                        hrBpm = trackPoint.getHeartRateBpm();
+                        if(hrBpm != null) {
+                            hr = hrBpm.getValue();
+                            hrValsArray.add((double)hr);
+                            hrTimeValsArray.add(time);
+                            lastTimeValue = time;
+                            if(time < startHrTime) {
+                                startHrTime = time;
+                            }
+                            if(time > endHrTime) {
+                                endHrTime = time;
+                            }
+                            nHrValues++;
                         }
                     }
                 }
-            } // if(extensions != null)
+            }
         }
         hrVals = new double[hrValsArray.size()];
 
@@ -294,159 +214,20 @@ public class GpxFileModel implements IFileModel, IConstants
         for(Long lVal : timeValsArray) {
             timeVals[index++] = lVal.longValue();
         }
-
-        // // DEBUG
-        // dumpTimeArray("hrTimeVals", hrTimeVals);
-        // dumpTimeArray("speedTimeVals", hrTimeVals);
-        // dumpTimeArray("timeVals", hrTimeVals);
-        //
-        // dumpDoubleArray("hrVals", hrVals);
-        // dumpDoubleArray("speedVals", speedVals);
-        // dumpDoubleArray("eleVals", eleVals);
-    }
-
-    // // DEBUG
-    // void dumpTimeArray(String name, long[] array) {
-    // System.out.println(name + ": " + array + " [" + array.length + "]");
-    // int len = array.length;
-    // long max = Long.MIN_VALUE;
-    // long min = Long.MAX_VALUE;
-    // for(int i = 0; i < len; i++) {
-    // if(array[i] > max) {
-    // max = array[i];
-    // }
-    // if(array[i] < min) {
-    // min = array[i];
-    // }
-    // }
-    // System.out.println(" Min: " + min + " " + new Date(min) + " Max: "
-    // + max + " " + new Date(max));
-    // }
-
-    // // DEBUG
-    // void dumpDoubleArray(String name, double[] array) {
-    // System.out.println(name + ": " + array + " [" + array.length + "]");
-    // int len = array.length;
-    // double max = -Double.MAX_VALUE;
-    // double min = Double.MAX_VALUE;
-    // for(int i = 0; i < len; i++) {
-    // if(array[i] > max) {
-    // max = array[i];
-    // }
-    // if(array[i] < min) {
-    // min = array[i];
-    // }
-    // }
-    // System.out.println(" Min: " + min + " Max: " + max);
-    // }
-
-    /**
-     * Gets the HR values for a track from an OxuxMapsExtension.
-     * 
-     * @param bpm The bpm string in the OruxMapsExtyension
-     * @return
-     */
-    boolean getHrFromOruxMapsBpm(String bpm, ArrayList<Double> hrValsArray,
-        ArrayList<Long> hrTimeValsArray) {
-        boolean res = true;
-        double hr;
-        if(bpm == null || bpm.length() == 0) {
-            return false;
-        }
-
-        String[] tokens = bpm.split("\n");
-        String[] vals;
-        long time;
-        for(String token : tokens) {
-            vals = token.split(" ");
-            if(vals == null || vals.length != 2) {
-                continue;
-            }
-            // HR
-            try {
-                hr = Double.parseDouble(vals[0]);
-            } catch(NumberFormatException ex) {
-                hr = Double.NaN;
-            }
-            // Time
-            try {
-                time = oruxMapsBpmFormatter.parse(vals[1]).getTime();
-            } catch(Exception ex) {
-                res = false;
-                continue;
-            }
-            hrValsArray.add(hr);
-            hrTimeValsArray.add(time);
-            if(time < startHrTime) {
-                startHrTime = time;
-            }
-            if(time > endHrTime) {
-                endHrTime = time;
-            }
-            nHrValues++;
-        }
-        return res;
     }
 
     /**
-     * Prints information about the tracks.
-     */
-    public void printTracks() {
-        if(gpx == null) {
-            Utils.errMsg("The GpxType is not defined");
-            return;
-        }
-
-        // Get the tracks
-        int trackNum = 0;
-        int segmentNum = 0;
-        List<TrkType> tracks = gpx.getTrk();
-        for(TrkType track : tracks) {
-            segmentNum = 0;
-            System.out.println("Track " + trackNum++);
-            List<TrksegType> trackSegments = track.getTrkseg();
-            for(TrksegType trackSegment : trackSegments) {
-                System.out.println("Segment " + segmentNum++);
-                List<WptType> waypoints = trackSegment.getTrkpt();
-                for(WptType waypoint : waypoints) {
-                    System.out.println("(" + waypoint.getLat() + ","
-                        + waypoint.getLon() + "," + waypoint.getEle() + ")"
-                        + " " + waypoint.getTime());
-                    ExtensionsType extensions = waypoint.getExtensions();
-                    if(extensions != null) {
-                        List<Object> objects = extensions.getAny();
-                        for(Object object : objects) {
-                            // System.out.println(" " + object.getClass());
-                            if(object instanceof Node) {
-                                Node node = (Node)object;
-                                System.out.println("  " + node.getNodeName());
-                                NodeList children = node.getChildNodes();
-                                int nChildren = children.getLength();
-                                for(int i = 0; i < nChildren; i++) {
-                                    Node node1 = children.item(i);
-                                    System.out
-                                        .println("    " + node1.getNodeName()
-                                            + " : " + node1.getTextContent());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Reads the file and returns a GpxType.
+     * Reads the file and returns a TrainingCenterDatabaseT.
      * 
      * @param fileName
      * @return
      * @throws IOException
      * @throws JAXBException
      */
-    public GpxType openFile(String fileName) throws IOException, JAXBException {
+    public TrainingCenterDatabaseT openFile(String fileName)
+        throws IOException, JAXBException {
         File file = new File(fileName);
-        return GPXParser.parse(file);
+        return TCXParser.parse(file);
     }
 
     /**
@@ -593,11 +374,11 @@ public class GpxFileModel implements IFileModel, IConstants
                     + LS;
             }
         }
-        info += nTracks + " Tracks" + "        " + nSegments + " Segments:"
+        info += nTracks + " Avtivities" + "        " + nSegments + " Laps:"
             + LS;
         info += nTrackPoints + " Track Points" + "        " + nHrValues
             + " HR Values:" + LS;
-        String metadata = TcxGpxUtils.getMetaData(gpx);
+        String metadata = TcxGpxUtils.getMetaData(tcx);
         if(metadata != null && !metadata.isEmpty()) {
             info += metadata;
         }
@@ -769,10 +550,10 @@ public class GpxFileModel implements IFileModel, IConstants
     }
 
     /**
-     * @return The value of gpx.
+     * @return The value of tcx.
      */
-    public GpxType getGpx() {
-        return gpx;
+    public TrainingCenterDatabaseT getTcx() {
+        return tcx;
     }
 
     /**

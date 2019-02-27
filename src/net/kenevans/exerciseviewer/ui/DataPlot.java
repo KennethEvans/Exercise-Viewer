@@ -25,7 +25,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 
 import net.kenevans.core.utils.Utils;
 import net.kenevans.exerciseviewer.model.IConstants;
-import net.kenevans.exerciseviewer.model.GpxFileModel;
+import net.kenevans.exerciseviewer.model.IFileModel;
 import net.kenevans.exerciseviewer.preferences.Settings;
 
 /*
@@ -344,7 +344,7 @@ public class DataPlot implements IConstants
     public void reset() {
         // Clear the plot
         clearPlot();
-        GpxFileModel model = null;
+        IFileModel model = null;
         if(viewer != null) {
             model = viewer.getModel();
         }
@@ -436,7 +436,7 @@ public class DataPlot implements IConstants
      * 
      * @param model
      */
-    public void addModelToChart(GpxFileModel model) {
+    public void addModelToChart(IFileModel model) {
         if(dataTypes == null) {
             Utils.errMsg("No data types defined");
             return;
