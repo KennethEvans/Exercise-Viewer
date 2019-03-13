@@ -1,6 +1,6 @@
 # net.kenevans.exerciseviewer
 
-Exercise Viewer is a Java GUI application for viewing heart rate, speed, and elevation data in GPX and TCX files.  It is provided as an Eclipse project.
+Exercise Viewer is a Java GUI application for viewing and plotting heart rate, speed, and elevation data in GPX and TCX files.  It is provided as an Eclipse project.
 
 **More information**
 
