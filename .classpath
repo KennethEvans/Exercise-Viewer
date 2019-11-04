@@ -16,5 +16,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/net.kenevans.exerciseviewer/gson-2.6.2-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="JavaAPIforKml.jar" sourcepath="JavaAPIforKml-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

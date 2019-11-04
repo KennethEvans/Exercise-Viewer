@@ -74,8 +74,8 @@ public class GpxFileModel implements IFileModel, IConstants
         }
 
         // Create binder for marshalling
-        // net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT
-        Class<net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT> trackPointExtensionTClass = net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT.class;
+        // net.kenevans.gpxcombined.TrackPointExtensionT
+        Class<net.kenevans.gpxcombined.TrackPointExtensionT> trackPointExtensionTClass = net.kenevans.gpxcombined.TrackPointExtensionT.class;
         Binder<Node> binder = null;
         try {
             JAXBContext jc = JAXBContext.newInstance(trackPointExtensionTClass);
@@ -226,7 +226,7 @@ public class GpxFileModel implements IFileModel, IConstants
                                 Node node = (Node)object;
                                 if(node.getNodeName().contains(
                                     "trackPointExtensionT") && binder != null) {
-                                    JAXBElement<net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT> element = null;
+                                    JAXBElement<net.kenevans.gpxcombined.TrackPointExtensionT> element = null;
                                     try {
                                         element = binder.unmarshal(node,
                                             trackPointExtensionTClass);
@@ -235,7 +235,7 @@ public class GpxFileModel implements IFileModel, IConstants
                                             + node.getNodeName());
                                     }
                                     if(element != null) {
-                                        net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT trackPointExt = (net.kenevans.gpxtrackpointextensionv2.TrackPointExtensionT)element
+                                        net.kenevans.gpxcombined.TrackPointExtensionT trackPointExt = (net.kenevans.gpxcombined.TrackPointExtensionT)element
                                             .getValue();
                                         if(trackPointExt != null) {
                                             val = trackPointExt.getHr();
@@ -386,6 +386,12 @@ public class GpxFileModel implements IFileModel, IConstants
             nHrValues++;
         }
         return res;
+    }
+
+    public GpxFileModel(String fileName, GpxType gpx) {
+        this.fileName = fileName;
+        this.gpx = gpx;
+        // Don't implement the other fields for now
     }
 
     /**

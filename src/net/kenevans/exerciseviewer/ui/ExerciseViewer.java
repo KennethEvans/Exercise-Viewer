@@ -1,6 +1,7 @@
 package net.kenevans.exerciseviewer.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -47,7 +48,10 @@ import org.jfree.ui.RefineryUtilities;
 import net.kenevans.core.utils.AboutBoxPanel;
 import net.kenevans.core.utils.ImageUtils;
 import net.kenevans.core.utils.Utils;
+import net.kenevans.exerciseviewer.kml.KmlOptions;
+import net.kenevans.exerciseviewer.kml.KmlUtils;
 import net.kenevans.exerciseviewer.model.GpxFileModel;
+import net.kenevans.exerciseviewer.model.GpxFileSetModel;
 import net.kenevans.exerciseviewer.model.IConstants;
 import net.kenevans.exerciseviewer.model.IFileModel;
 import net.kenevans.exerciseviewer.model.TcxFileModel;
@@ -56,6 +60,10 @@ import net.kenevans.exerciseviewer.preferences.FileLocations.FileLocation;
 import net.kenevans.exerciseviewer.preferences.FileLocations.FilterMode;
 import net.kenevans.exerciseviewer.preferences.PreferencesDialog;
 import net.kenevans.exerciseviewer.preferences.Settings;
+import net.kenevans.exerciseviewer.utils.RainbowColorScheme;
+import net.kenevans.exerciseviewer.utils.TcxGpxConverter;
+import net.kenevans.gpxcombined.GpxType;
+import net.kenevans.trainingcenterdatabasev2.TrainingCenterDatabaseT;
 
 /**
  * ExerciseViewer is a viewer to view ECG fileNames from the MD100A ECG Monitor.
@@ -67,6 +75,9 @@ public class ExerciseViewer extends JFrame implements IConstants
     private static final String AUTHOR = "Written by Kenneth Evans, Jr.";
     private static final String COPYRIGHT = "Copyright (c) 2014-2019 Kenneth Evans";
     private static final String COMPANY = "kenevans.net";
+
+    private static int N_KML;
+    private static final int N_KML_MAX = 10;
 
     /**
      * Use this to determine if a file is loaded initially. Useful for
@@ -169,6 +180,7 @@ public class ExerciseViewer extends JFrame implements IConstants
 
         // Sort in reverse order
         Collections.sort(fileList, new Comparator<File>() {
+
             public int compare(File fa, File fb) {
                 if(fa.isDirectory() && !fb.isDirectory()) return -1;
                 if(fb.isDirectory() && !fa.isDirectory()) return 1;
@@ -221,6 +233,7 @@ public class ExerciseViewer extends JFrame implements IConstants
 
         // Fill in the ListModel
         populateList();
+
     }
 
     /**
@@ -370,6 +383,15 @@ public class ExerciseViewer extends JFrame implements IConstants
 
         separator = new JSeparator();
         menu.add(separator);
+
+        menuItem = new JMenuItem();
+        menuItem.setText("Show in Google Earth...");
+        menuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                showGpx();
+            }
+        });
+        menu.add(menuItem);
 
         menuItem = new JMenuItem();
         menuItem.setText("File Info...");
@@ -591,6 +613,48 @@ public class ExerciseViewer extends JFrame implements IConstants
         if(model != null) {
             String info = model.getInfo();
             scrolledTextMsg(this, info, "File Info", 600, 400);
+        }
+    }
+
+    /**
+     * Shows the exercise in Google Earth.
+     */
+    private void showGpx() {
+        if(model == null) {
+            return;
+        }
+        GpxFileModel gpxFileModel = null;
+        if(model instanceof TcxFileModel) {
+            TcxFileModel tcxFileModel = (TcxFileModel)model;
+            TrainingCenterDatabaseT tcx = tcxFileModel.getTcx();
+            String fileName = tcxFileModel.getFileName();
+            GpxType gpxNew = TcxGpxConverter.convertTCXtoGpx(tcx);
+            gpxFileModel = new GpxFileModel(fileName, gpxNew);
+
+        } else if(model instanceof GpxFileModel) {
+            gpxFileModel = (GpxFileModel)model;
+        }
+        GpxFileSetModel gpxFileSetModel = new GpxFileSetModel();
+        gpxFileSetModel.add(gpxFileModel);
+        RainbowColorScheme rainbowColorScheme = new RainbowColorScheme(
+            N_KML_MAX);
+        KmlOptions kmlOptions = new KmlOptions();
+        if(N_KML > N_KML_MAX) {
+            N_KML = 0;
+        }
+        Color color = rainbowColorScheme
+            .getStoredColor((double)N_KML++ / (double)N_KML_MAX);
+        int red = color.getRed();
+        int green = color.getGreen();
+        int blue = color.getBlue();
+        String trkColor = String.format("%02x%02x%02x", blue, green, red);
+        kmlOptions.setTrkColorMode(KML_COLOR_MODE_COLOR);
+        kmlOptions.setTrkColor(trkColor);
+        try {
+            KmlUtils.createKml("Exercise Viewer " + N_KML, gpxFileSetModel,
+                kmlOptions);
+        } catch(Exception ex) {
+            Utils.excMsg("Could not create KML file", ex);
         }
     }
 
