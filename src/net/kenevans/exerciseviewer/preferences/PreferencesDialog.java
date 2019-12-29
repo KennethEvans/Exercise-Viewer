@@ -1,7 +1,6 @@
 package net.kenevans.exerciseviewer.preferences;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -17,6 +16,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -32,7 +32,7 @@ import net.kenevans.exerciseviewer.ui.ExerciseViewer;
 
 /**
  * PreferencesDialog is a dialog to set the Preferences for ExerciseViewer. It only
- * returns after Cancel. It can save the values to the preference store or set
+ * returns after Done. It can save the values to the preference store or set
  * them in the viewer. In either case it remains visible.
  * 
  * @author Kenneth Evans, Jr.
@@ -87,8 +87,8 @@ public class PreferencesDialog extends JDialog implements IConstants
     /**
      * Constructor
      */
-    public PreferencesDialog(Component parent, ExerciseViewer viewer) {
-        super();
+    public PreferencesDialog(JFrame parent, ExerciseViewer viewer) {
+        super(parent);
         this.viewer = viewer;
         if(viewer == null) {
             Utils.errMsg("Viewer is null");
@@ -1253,7 +1253,7 @@ public class PreferencesDialog extends JDialog implements IConstants
 
     /**
      * Shows the dialog and returns whether it was successful or not. However
-     * currently it is always successful and returns only on Cancel.
+     * currently it is always successful and returns only on Done.
      * 
      * @return
      */
