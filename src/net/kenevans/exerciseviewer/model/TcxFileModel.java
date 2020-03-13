@@ -298,13 +298,13 @@ public class TcxFileModel implements IFileModel, IConstants
             info += "HR: " + startHrDate + " to " + endHrDate + LS;
             info += String.format("HR Duration: %d hr %d min %d sec",
                 hrDurationHours, hrDurationMin, hrDurationSec) + LS;
-            stats = getTimeAverageStats(hrVals, hrTimeVals, -Double.MIN_VALUE);
+            stats = getTimeAverageStats(hrVals, hrTimeVals, 0);
             if(stats != null) {
                 info += String.format("HR Min=%.0f HR Max=%.0f HR Avg=%.1f",
                     stats[0], stats[1], stats[2]) + LS;
             } else {
                 // Get simple average
-                stats = getSimpleStats(hrVals, hrTimeVals, -Double.MIN_VALUE);
+                stats = getSimpleStats(hrVals, hrTimeVals, 0);
                 if(stats != null) {
                     info += String.format("HR Min=%.0f HR Max=%.0f HR Avg=%.1f"
                         + " (Simple Average)", stats[0], stats[1], stats[2])
@@ -313,8 +313,6 @@ public class TcxFileModel implements IFileModel, IConstants
             }
         }
         if(speedVals.length != 0) {
-            stats = getTimeAverageStats(speedVals, speedTimeVals,
-                -Double.MIN_VALUE);
             if(stats != null) {
                 info += String.format(
                     "Speed Min=%.1f Speed Max=%.1f Speed Avg=%.1f mi/hr",
@@ -352,7 +350,7 @@ public class TcxFileModel implements IFileModel, IConstants
 
         }
         if(eleVals.length != 0) {
-            stats = getTimeAverageStats(eleVals, timeVals, -Double.MIN_VALUE);
+            stats = getTimeAverageStats(eleVals, timeVals, 0);
             stats1 = getEleStats(eleVals, timeVals);
             if(stats != null) {
                 info += String.format("Ele Min=%.0f Ele Max=%.0f Ele Avg=%.0f ",
@@ -374,7 +372,7 @@ public class TcxFileModel implements IFileModel, IConstants
                     + LS;
             }
         }
-        info += nTracks + " Avtivities" + "        " + nSegments + " Laps:"
+        info += nTracks + " Activities" + "        " + nSegments + " Laps:"
             + LS;
         info += nTrackPoints + " Track Points" + "        " + nHrValues
             + " HR Values:" + LS;
@@ -472,7 +470,7 @@ public class TcxFileModel implements IFileModel, IConstants
 
         // Loop over values.
         double totalWeight = 0;
-        double weight;
+        double weight = 0;
         for(int i = 0; i < len; i++) {
             val = vals[i];
             if(Double.isNaN(val)) continue;
