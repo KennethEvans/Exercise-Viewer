@@ -11,12 +11,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -71,17 +70,6 @@ public class GpxFileModel implements IFileModel, IConstants
         } catch(Exception ex) {
             ex.printStackTrace();
             Utils.excMsg("Error reading " + fileName, ex);
-        }
-
-        // Create binder for marshalling
-        // net.kenevans.gpxcombined.TrackPointExtensionT
-        Class<net.kenevans.gpxcombined.TrackPointExtensionT> trackPointExtensionTClass = net.kenevans.gpxcombined.TrackPointExtensionT.class;
-        Binder<Node> binder = null;
-        try {
-            JAXBContext jc = JAXBContext.newInstance(trackPointExtensionTClass);
-            binder = jc.createBinder();
-        } catch(JAXBException ex) {
-            binder = null;
         }
 
         ArrayList<Long> timeValsArray = new ArrayList<Long>();
@@ -193,12 +181,11 @@ public class GpxFileModel implements IFileModel, IConstants
                         eleValsArray.add(0.0);
                     }
                     // Check extensions for HR
+                    // Use DOM to avoid Trackpointextensionsv1/v2 issues
                     extensions = tpt.getExtensions();
                     if(!usingOruxMapBpm && extensions != null) {
                         List<Object> objects = extensions.getAny();
                         for(Object object : objects) {
-                            // System.out.println(object + " class=" +
-                            // object.getClass());
                             if(object instanceof JAXBElement<?>) {
                                 JAXBElement<?> element = (JAXBElement<?>)object;
                                 if(element != null && element
@@ -223,43 +210,36 @@ public class GpxFileModel implements IFileModel, IConstants
                                     }
                                 }
                             } else if(object instanceof Node) {
-                                Node node = (Node)object;
-                                if(node.getNodeName().contains(
-                                    "trackPointExtensionT") && binder != null) {
-                                    JAXBElement<net.kenevans.gpxcombined.TrackPointExtensionT> element = null;
-                                    try {
-                                        element = binder.unmarshal(node,
-                                            trackPointExtensionTClass);
-                                    } catch(JAXBException ex) {
-                                        System.out.println("Cannot parse "
-                                            + node.getNodeName());
-                                    }
-                                    if(element != null) {
-                                        net.kenevans.gpxcombined.TrackPointExtensionT trackPointExt = (net.kenevans.gpxcombined.TrackPointExtensionT)element
-                                            .getValue();
-                                        if(trackPointExt != null) {
-                                            val = trackPointExt.getHr();
-                                            hrValsArray.add(val);
-                                            hrTimeValsArray.add(time);
-                                            lastTimeValue = time;
-                                            if(time < startHrTime) {
-                                                startHrTime = time;
-                                            }
-                                            if(time > endHrTime) {
-                                                endHrTime = time;
-                                            }
-                                            nHrValues++;
-                                            // System.out.println(val + " " +
-                                            // date.getTime());
-                                            break;
+                                Element elem = (Element)object;
+                                NodeList children = elem.getChildNodes();
+                                for(int i = 0; i < children.getLength(); i++) {
+                                    Node node = children.item(i);
+                                    if(node.getLocalName() != null
+                                        && node.getLocalName().equals("hr")) {
+                                        bpm = node.getTextContent();
+                                        try {
+                                            val = Double.parseDouble(bpm);
+                                        } catch(NumberFormatException ex) {
+                                            val = Double.NaN;
                                         }
+                                        hrValsArray.add(val);
+                                        hrTimeValsArray.add(time);
+                                        lastTimeValue = time;
+                                        if(time < startHrTime) {
+                                            startHrTime = time;
+                                        }
+                                        if(time > endHrTime) {
+                                            endHrTime = time;
+                                        }
+                                        nHrValues++;
                                     }
                                 }
                             }
                         }
-                    }
+                    } // if(extensions != null)
+
                 }
-            } // if(extensions != null)
+            }
         }
         hrVals = new double[hrValsArray.size()];
 

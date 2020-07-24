@@ -29,7 +29,7 @@ public interface IConstants
     /** The title for the viewer. */
     public static final String TITLE = "Exercise Viewer";
     /** The version */
-    public static final String VERSION = "2.1.0";
+    public static final String VERSION = "2.2.0";
     /** The title for the plot. */
     public static final String PLOT_TITLE = "Exercise Data";
     /** The frame width for the viewer. */
