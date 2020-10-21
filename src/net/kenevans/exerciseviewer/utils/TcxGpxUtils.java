@@ -7,6 +7,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import net.kenevans.gpxcombined.GpxType;
 import net.kenevans.gpxcombined.MetadataType;
 import net.kenevans.gpxcombined.TrkType;
+import net.kenevans.trainingcenterdatabasev2.AbstractSourceT;
 import net.kenevans.trainingcenterdatabasev2.ActivityListT;
 import net.kenevans.trainingcenterdatabasev2.ActivityT;
 import net.kenevans.trainingcenterdatabasev2.PlanT;
@@ -14,7 +15,6 @@ import net.kenevans.trainingcenterdatabasev2.SportT;
 import net.kenevans.trainingcenterdatabasev2.TrainingCenterDatabaseT;
 import net.kenevans.trainingcenterdatabasev2.TrainingT;
 import net.kenevans.trainingcenterdatabasev2.TrainingTypeT;
-import net.kenevans.trainingcenterdatabasev2.parser.TCXParser;
 
 /*
  * Created on Feb 26, 2019
@@ -33,9 +33,12 @@ public class TcxGpxUtils
      */
     public static String getMetaData(TrainingCenterDatabaseT tcx) {
         StringBuilder sb = new StringBuilder();
+        
         // Metadata
-        String desc = TCXParser.getMetadataDescriptionFromTcx(tcx);
-        sb.append("MetadataDescription: " + desc);
+        AbstractSourceT author = tcx.getAuthor();
+        if(author != null && author.getName() != null) {
+            sb.append("Author: " + author.getName());
+        }
 
         ActivityListT activities;
         List<ActivityT> activityList;
@@ -50,6 +53,7 @@ public class TcxGpxUtils
         // Loop over activities
         activityList = activities.getActivity();
         int nActivities = 0;
+        String desc;
         for(ActivityT activity : activityList) {
             nActivities++;
             sportName = "";
