@@ -28,8 +28,14 @@ public interface IConstants
 
     /** The title for the viewer. */
     public static final String TITLE = "Exercise Viewer";
-    /** The version */
-    public static final String VERSION = "2.2.0";
+    /** The version. */
+    public static final String VERSION = "2.2.1";
+    /** The author. */
+    public static final String AUTHOR = "Written by Kenneth Evans, Jr.";
+    /** The copyright */
+    public static final String COPYRIGHT = "Copyright (c) 2014-2021 Kenneth Evans";
+    /** The company. */
+    public static final String COMPANY = "kenevans.net";
     /** The title for the plot. */
     public static final String PLOT_TITLE = "Exercise Data";
     /** The frame width for the viewer. */
@@ -233,7 +239,7 @@ public interface IConstants
         {"Color", Integer.toString(KML_COLOR_MODE_COLOR)},
         {"Color Set", Integer.toString(KML_COLOR_MODE_COLORSET)},
         {"Rainbow", Integer.toString(KML_COLOR_MODE_RAINBOW)},};
-    
+
     public static final String P_KML_FILENAME = "kmlFileName";
     public static final String D_KML_FILENAME = "";
 

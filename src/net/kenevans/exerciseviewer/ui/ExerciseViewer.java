@@ -72,10 +72,6 @@ import net.kenevans.trainingcenterdatabasev2.TrainingCenterDatabaseT;
  */
 public class ExerciseViewer extends JFrame implements IConstants
 {
-    private static final String AUTHOR = "Written by Kenneth Evans, Jr.";
-    private static final String COPYRIGHT = "Copyright (c) 2014-2020 Kenneth Evans";
-    private static final String COMPANY = "kenevans.net";
-
     private static int N_KML;
     private static final int N_KML_MAX = 10;
 
