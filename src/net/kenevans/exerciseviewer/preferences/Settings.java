@@ -29,6 +29,14 @@ public class Settings implements IConstants
     private int speedRollingAvgCount = D_SPEED_ROLLING_AVG_COUNT;
     private int eleRollingAvgCount = D_ELE_ROLLING_AVG_COUNT;
 
+    private double hrMin = D_HR_MIN;
+    private double speedMin = D_SPEED_MIN;
+    private double eleMin = D_ELE_MIN;
+
+    private double hrMax = D_HR_MAX;
+    private double speedMax = D_SPEED_MAX;
+    private double eleMax = D_ELE_MAX;
+
     private int zone1Val = D_ZONE_1_VAL;
     private int zone2Val = D_ZONE_2_VAL;
     private int zone3Val = D_ZONE_3_VAL;
@@ -60,6 +68,14 @@ public class Settings implements IConstants
             D_HR_ZONES_VISIBILITY);
         speedVisible = prefs.getBoolean(P_SPEED_VISIBILITY, D_SPEED_VISIBILITY);
         eleVisible = prefs.getBoolean(P_ELE_VISIBILITY, D_ELE_VISIBILITY);
+
+        hrMin = prefs.getDouble(P_HR_MIN, D_HR_MIN);
+        speedMin = prefs.getDouble(P_SPEED_MIN, D_SPEED_MIN);
+        eleMin = prefs.getDouble(P_ELE_MIN, D_ELE_MIN);
+
+        hrMax = prefs.getDouble(P_HR_MAX, D_HR_MAX);
+        speedMax = prefs.getDouble(P_SPEED_MAX, D_SPEED_MAX);
+        eleMax = prefs.getDouble(P_ELE_MAX, D_ELE_MAX);
 
         hrRollingAvgCount = prefs.getInt(P_HR_ROLLING_AVG_COUNT,
             D_HR_ROLLING_AVG_COUNT);
@@ -113,6 +129,14 @@ public class Settings implements IConstants
             prefs.putInt(P_SPEED_ROLLING_AVG_COUNT, speedRollingAvgCount);
             prefs.putInt(P_ELE_ROLLING_AVG_COUNT, eleRollingAvgCount);
 
+            prefs.putDouble(P_HR_MIN, hrMin);
+            prefs.putDouble(P_SPEED_MIN, speedMin);
+            prefs.putDouble(P_ELE_MIN, eleMin);
+
+            prefs.putDouble(P_HR_MAX, hrMax);
+            prefs.putDouble(P_SPEED_MAX, speedMax);
+            prefs.putDouble(P_ELE_MAX, eleMax);
+
             prefs.putInt(P_ZONE_1_VAL, zone1Val);
             prefs.putInt(P_ZONE_2_VAL, zone2Val);
             prefs.putInt(P_ZONE_3_VAL, zone3Val);
@@ -149,36 +173,36 @@ public class Settings implements IConstants
     public boolean checkValues(boolean showErrors) {
         boolean retVal = true;
 
-//        // Default directory
-//        if(defaultDirectory == null) {
-//            if(showErrors) {
-//                Utils.errMsg("Value for the default directory is null");
-//            }
-//            retVal = false;
-//        } else {
-//            File file = new File(defaultDirectory);
-//            if(file == null) {
-//                if(showErrors) {
-//                    Utils.errMsg("The default directory is invalid");
-//                }
-//                retVal = false;
-//            } else {
-//                if(!file.exists()) {
-//                    if(showErrors) {
-//                        Utils.errMsg("The default directory does not exist");
-//                    }
-//                    retVal = false;
-//                } else {
-//                    if(!file.isDirectory()) {
-//                        if(showErrors) {
-//                            Utils.errMsg(
-//                                "The default directory is not a directory");
-//                        }
-//                        retVal = false;
-//                    }
-//                }
-//            }
-//        }
+        // // Default directory
+        // if(defaultDirectory == null) {
+        // if(showErrors) {
+        // Utils.errMsg("Value for the default directory is null");
+        // }
+        // retVal = false;
+        // } else {
+        // File file = new File(defaultDirectory);
+        // if(file == null) {
+        // if(showErrors) {
+        // Utils.errMsg("The default directory is invalid");
+        // }
+        // retVal = false;
+        // } else {
+        // if(!file.exists()) {
+        // if(showErrors) {
+        // Utils.errMsg("The default directory does not exist");
+        // }
+        // retVal = false;
+        // } else {
+        // if(!file.isDirectory()) {
+        // if(showErrors) {
+        // Utils.errMsg(
+        // "The default directory is not a directory");
+        // }
+        // retVal = false;
+        // }
+        // }
+        // }
+        // }
 
         return retVal;
     }
@@ -199,6 +223,14 @@ public class Settings implements IConstants
         this.hrRollingAvgCount = settings.hrRollingAvgCount;
         this.speedRollingAvgCount = settings.speedRollingAvgCount;
         this.eleRollingAvgCount = settings.eleRollingAvgCount;
+
+        this.hrMin = settings.hrMin;
+        this.speedMin = settings.speedMin;
+        this.eleMin = settings.eleMin;
+
+        this.hrMax = settings.hrMax;
+        this.speedMax = settings.speedMax;
+        this.eleMax = settings.eleMax;
 
         this.zone1Val = settings.zone1Val;
         this.zone2Val = settings.zone2Val;
@@ -330,6 +362,90 @@ public class Settings implements IConstants
      */
     public void setEleRollingAvgCount(int eleRollingAvgCount) {
         this.eleRollingAvgCount = eleRollingAvgCount;
+    }
+
+    /**
+     * @return The value of hrMin.
+     */
+    public double getHrMin() {
+        return hrMin;
+    }
+
+    /**
+     * @param hrMin The new value for hrMin.
+     */
+    public void setHrMin(double hrMin) {
+        this.hrMin = hrMin;
+    }
+
+    /**
+     * @return The value of speedMin.
+     */
+    public double getSpeedMin() {
+        return speedMin;
+    }
+
+    /**
+     * @param speedMin The new value for speedMin.
+     */
+    public void setSpeedMin(double speedMin) {
+        this.speedMin = speedMin;
+    }
+
+    /**
+     * @return The value of eleMin.
+     */
+    public double getEleMin() {
+        return eleMin;
+    }
+
+    /**
+     * @param eleMin The new value for eleMin.
+     */
+    public void setEleMin(double eleMin) {
+        this.eleMin = eleMin;
+    }
+
+    /**
+     * @return The value of hrMin.
+     */
+    public double getHrMax() {
+        return hrMax;
+    }
+
+    /**
+     * @param hrMax The new value for hrMax.
+     */
+    public void setHrMax(double hrMax) {
+        this.hrMax = hrMax;
+    }
+
+    /**
+     * @return The value of speedMax.
+     */
+    public double getSpeedMax() {
+        return speedMax;
+    }
+
+    /**
+     * @param speedMax The new value for speedMax.
+     */
+    public void setSpeedMax(double speedMax) {
+        this.speedMax = speedMax;
+    }
+
+    /**
+     * @return The value of eleMax.
+     */
+    public double getEleMax() {
+        return eleMax;
+    }
+
+    /**
+     * @param eleMax The new value for eleMax.
+     */
+    public void setEleMax(double eleMax) {
+        this.eleMax = eleMax;
     }
 
     /**

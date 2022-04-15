@@ -118,15 +118,18 @@ public class DataPlot implements IConstants
             // Don't use Boolean.getBoolean. It gets a system value with that
             // name
             new DataType(plot, D_HR_NAME, HR_INDEX, Color.decode(D_HR_COLOR),
-                settings.getHrVisible(), settings.getHrRollingAvgCount()),
+                settings.getHrVisible(), settings.getHrRollingAvgCount(),
+                settings.getHrMin(), settings.getHrMax()),
             new DataType(plot, D_SPEED_NAME, SPEED_INDEX,
                 Color.decode(D_SPEED_COLOR), settings.getSpeedVisible(),
-                settings.getSpeedRollingAvgCount()),
+                settings.getSpeedRollingAvgCount(), settings.getSpeedMin(),
+                settings.getSpeedMax()),
             new DataType(plot, D_ELE_NAME, ELE_INDEX, Color.decode(D_ELE_COLOR),
-                settings.getEleVisible(), settings.getEleRollingAvgCount()),
+                settings.getEleVisible(), settings.getEleRollingAvgCount(),
+                settings.getEleMin(), settings.getEleMax()),
             new HrDataType(plot, D_HR_ZONES_NAME, HR_ZONES_INDEX,
-                Color.decode(D_HR_ZONES_COLOR), settings.getHrZonesVisible(),
-                0),
+                Color.decode(D_HR_ZONES_COLOR), settings.getHrZonesVisible(), 0,
+                settings.getHrMin(), settings.getHrMax()),
             // Comment to keep brace on a separate line
         };
 
@@ -366,15 +369,18 @@ public class DataPlot implements IConstants
             // Don't use Boolean.getBoolean. It gets a system value with that
             // name
             new DataType(plot, D_HR_NAME, HR_INDEX, Color.decode(D_HR_COLOR),
-                settings.getHrVisible(), settings.getHrRollingAvgCount()),
+                settings.getHrVisible(), settings.getHrRollingAvgCount(),
+                settings.getHrMin(), settings.getHrMax()),
             new DataType(plot, D_SPEED_NAME, SPEED_INDEX,
                 Color.decode(D_SPEED_COLOR), settings.getSpeedVisible(),
-                settings.getSpeedRollingAvgCount()),
+                settings.getSpeedRollingAvgCount(), settings.getSpeedMin(),
+                settings.getSpeedMax()),
             new DataType(plot, D_ELE_NAME, ELE_INDEX, Color.decode(D_ELE_COLOR),
-                settings.getEleVisible(), settings.getEleRollingAvgCount()),
+                settings.getEleVisible(), settings.getEleRollingAvgCount(),
+                settings.getEleMin(), settings.getEleMax()),
             new HrDataType(plot, D_HR_ZONES_NAME, HR_ZONES_INDEX,
-                Color.decode(D_HR_ZONES_COLOR), settings.getHrZonesVisible(),
-                0),
+                Color.decode(D_HR_ZONES_COLOR), settings.getHrZonesVisible(), 0,
+                settings.getHrMin(), settings.getHrMax()),
             // Comment to keep brace on a separate line
         };
 
@@ -462,8 +468,16 @@ public class DataPlot implements IConstants
                     // Axis
                     NumberAxis axis = new NumberAxis(type.getName());
                     axis.setFixedDimension(10.0);
-                    axis.setAutoRangeIncludesZero(false);
-                    axis.setAutoRange(true);
+                    if(Double.isNaN(type.minY) && Double.isNaN(type.maxY)) {
+                        axis.setAutoRangeIncludesZero(false);
+                        axis.setAutoRange(true);
+                    } else if(Double.isNaN(type.minY)) {
+                        axis.setRange(0, type.maxY);
+                    } else if(Double.isNaN(type.maxY)) {
+                        axis.setRange(type.minY, 120);
+                    } else {
+                        axis.setRange(type.minY, type.maxY);
+                    }
                     axis.setLabelPaint(type.getPaint());
                     axis.setTickLabelPaint(type.getPaint());
                     // Make the label font be the same as for the primary axis
@@ -519,6 +533,7 @@ public class DataPlot implements IConstants
                     plot.setDataset(datasetIndex, null);
                 }
             }
+
             setAllMarkers();
         } catch(Exception ex) {
             Utils.excMsg("Error adding data to plot", ex);

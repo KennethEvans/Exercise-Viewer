@@ -4,7 +4,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/net.kenevans.core.utils"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/net.kenevans.gpx"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/net.kenevans.jaxb"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-10">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>

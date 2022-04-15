@@ -65,6 +65,13 @@ public class PreferencesDialog extends JDialog implements IConstants
     JTextField speedRavCountText;
     JTextField eleRavCountText;
 
+    JTextField hrMaxText;
+    JTextField hrMinText;
+    JTextField speedMaxText;
+    JTextField speedMinText;
+    JTextField eleMaxText;
+    JTextField eleMinText;
+
     JTextField zone1ValText;
     JTextField zone2ValText;
     JTextField zone3ValText;
@@ -226,29 +233,60 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbc.gridx = 0;
         hrGroup.add(hrVisibileCheck, gbc);
 
-        // Running average
-        String toolTip = "Number of data points to average over.  "
-            + "0->Don't average.  " + "Negative->Omit raw values.";
-        label = new JLabel("Running Average Count:");
+        // HR Min
+        String toolTip = "Minimum HR value or blank for none.";
+        label = new JLabel("Min:");
         label.setToolTipText(toolTip);
         gbc = (GridBagConstraints)gbcDefault.clone();
         gbc.gridx = 1;
+        hrGroup.add(label, gbc);
+
+        hrMinText = new JTextField(5);
+        hrMinText.setToolTipText(label.getText());
+        hrMinText.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 2;
+        hrGroup.add(hrMinText, gbc);
+
+        // HR Max
+        toolTip = "Maximum HR value or blank for none.";
+        label = new JLabel("Max:");
+        label.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 3;
+        hrGroup.add(label, gbc);
+
+        hrMaxText = new JTextField(5);
+        hrMaxText.setToolTipText(label.getText());
+        hrMaxText.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 4;
+        hrGroup.add(hrMaxText, gbc);
+
+        // Running average
+        toolTip = "Number of data points to average over.  "
+            + "0->Don't average.  " + "Negative->Omit raw values.";
+        label = new JLabel("Average Over:");
+        label.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 5;
         hrGroup.add(label, gbc);
 
         hrRavCountText = new JTextField(5);
         hrRavCountText.setToolTipText(label.getText());
         hrRavCountText.setToolTipText(toolTip);
         gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 2;
+        gbc.gridx = 6;
         // gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 100;
+        // gbc.weightx = 100;
         hrGroup.add(hrRavCountText, gbc);
 
         // Zones visible
         hrZonesVisibileCheck = new JCheckBox("Zones Visible");
         hrZonesVisibileCheck.setToolTipText("Whether HR zones are visible.");
         gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 3;
+        gbc.gridx = 7;
+        gbc.weightx = 100;
         hrGroup.add(hrZonesVisibileCheck, gbc);
 
         // Speed Group //////////////////////////////////////////////////////
@@ -272,20 +310,50 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbc.gridx = 0;
         speedGroup.add(speedVisibileCheck, gbc);
 
-        // Running average
-        toolTip = "Number of data points to average over.  "
-            + "0->Don't average.  " + "Negative->Omit raw values.";
-        label = new JLabel("Running Average Count:");
+        // Speed Min
+        toolTip = "Minimum speed value or blank for none.";
+        label = new JLabel("Min:");
         label.setToolTipText(toolTip);
         gbc = (GridBagConstraints)gbcDefault.clone();
         gbc.gridx = 1;
+        speedGroup.add(label, gbc);
+
+        speedMinText = new JTextField(5);
+        speedMinText.setToolTipText(label.getText());
+        speedMinText.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 2;
+        speedGroup.add(speedMinText, gbc);
+
+        // Speed Max
+        toolTip = "Maximum speed value or blank for none.";
+        label = new JLabel("Max:");
+        label.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 3;
+        speedGroup.add(label, gbc);
+
+        speedMaxText = new JTextField(5);
+        speedMaxText.setToolTipText(label.getText());
+        speedMaxText.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 4;
+        speedGroup.add(speedMaxText, gbc);
+
+        // Running average
+        toolTip = "Number of data points to average over.  "
+            + "0->Don't average.  " + "Negative->Omit raw values.";
+        label = new JLabel("Average Over:");
+        label.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 5;
         speedGroup.add(label, gbc);
 
         speedRavCountText = new JTextField(5);
         speedRavCountText.setToolTipText(label.getText());
         speedRavCountText.setToolTipText(toolTip);
         gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 2;
+        gbc.gridx = 6;
         // gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 100;
         speedGroup.add(speedRavCountText, gbc);
@@ -311,20 +379,50 @@ public class PreferencesDialog extends JDialog implements IConstants
         gbc.gridx = 0;
         eleGroup.add(eleVisibileCheck, gbc);
 
-        // Running average
-        toolTip = "Number of data points to average over.  "
-            + "0->Don't average.  " + "Negative->Omit raw values.";
-        label = new JLabel("Running Average Count:");
+        // Elevation Min
+        toolTip = "Minimum elevation value or blank for none.";
+        label = new JLabel("Min:");
         label.setToolTipText(toolTip);
         gbc = (GridBagConstraints)gbcDefault.clone();
         gbc.gridx = 1;
+        eleGroup.add(label, gbc);
+
+        eleMinText = new JTextField(5);
+        eleMinText.setToolTipText(label.getText());
+        eleMinText.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 2;
+        eleGroup.add(eleMinText, gbc);
+
+        // Elevation Max
+        toolTip = "Maximum elevation value or blank for none.";
+        label = new JLabel("Max:");
+        label.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 3;
+        eleGroup.add(label, gbc);
+
+        eleMaxText = new JTextField(5);
+        eleMaxText.setToolTipText(label.getText());
+        eleMaxText.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 4;
+        eleGroup.add(eleMaxText, gbc);
+
+        // Running average
+        toolTip = "Number of data points to average over.  "
+            + "0->Don't average.  " + "Negative->Omit raw values.";
+        label = new JLabel("Average Over:");
+        label.setToolTipText(toolTip);
+        gbc = (GridBagConstraints)gbcDefault.clone();
+        gbc.gridx = 5;
         eleGroup.add(label, gbc);
 
         eleRavCountText = new JTextField(5);
         eleRavCountText.setToolTipText(label.getText());
         eleRavCountText.setToolTipText(toolTip);
         gbc = (GridBagConstraints)gbcDefault.clone();
-        gbc.gridx = 2;
+        gbc.gridx = 6;
         // gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 100;
         eleGroup.add(eleRavCountText, gbc);
@@ -1093,6 +1191,55 @@ public class PreferencesDialog extends JDialog implements IConstants
                 .setText(Integer.toString(settings.getEleRollingAvgCount()));
         }
 
+        double val = settings.getHrMin();
+        if(hrMinText != null) {
+            if(Double.isNaN(val)) {
+                hrMinText.setText("");
+            } else {
+                hrMinText.setText(Double.toString(val));
+            }
+        }
+        val = settings.getSpeedMin();
+        if(speedMinText != null) {
+            if(Double.isNaN(val)) {
+                speedMinText.setText("");
+            } else {
+                speedMinText.setText(Double.toString(val));
+            }
+        }
+        val = settings.getEleMin();
+        if(eleMinText != null) {
+            if(Double.isNaN(val)) {
+                eleMinText.setText("");
+            } else {
+                eleMinText.setText(Double.toString(val));
+            }
+        }
+        val = settings.getHrMax();
+        if(hrMaxText != null) {
+            if(Double.isNaN(val)) {
+                hrMaxText.setText("");
+            } else {
+                hrMaxText.setText(Double.toString(val));
+            }
+        }
+        val = settings.getSpeedMax();
+        if(speedMaxText != null) {
+            if(Double.isNaN(val)) {
+                speedMaxText.setText("");
+            } else {
+                speedMaxText.setText(Double.toString(val));
+            }
+        }
+        val = settings.getEleMax();
+        if(eleMaxText != null) {
+            if(Double.isNaN(val)) {
+                eleMaxText.setText("");
+            } else {
+                eleMaxText.setText(Double.toString(val));
+            }
+        }
+
         if(zone1ValText != null) {
             zone1ValText.setText(Integer.toString(settings.getZone1Val()));
         }
@@ -1166,11 +1313,49 @@ public class PreferencesDialog extends JDialog implements IConstants
             settings.setEleVisible(eleVisibileCheck.isSelected());
 
             settings.setHrRollingAvgCount(
-                Integer.parseInt((hrRavCountText.getText())));
+                Integer.parseInt(hrRavCountText.getText()));
             settings.setSpeedRollingAvgCount(
-                Integer.parseInt((speedRavCountText.getText())));
+                Integer.parseInt(speedRavCountText.getText()));
             settings.setEleRollingAvgCount(
-                Integer.parseInt((eleRavCountText.getText())));
+                Integer.parseInt(eleRavCountText.getText()));
+
+            String text = hrMinText.getText();
+            if (text.isEmpty()) {
+                settings.setHrMin(Double.NaN);
+            } else {
+                settings.setHrMin(Double.parseDouble(text));
+            }
+            text = speedMinText.getText();
+            if (text.isEmpty()) {
+                settings.setSpeedMin(Double.NaN);
+            } else {
+                settings.setSpeedMin(Double.parseDouble(text));
+            }
+            text = eleMinText.getText();
+            if (text.isEmpty()) {
+                settings.setEleMin(Double.NaN);
+            } else {
+                settings.setEleMin(Double.parseDouble(text));
+            }
+
+            text = hrMaxText.getText();
+            if (text.isEmpty()) {
+                settings.setHrMax(Double.NaN);
+            } else {
+                settings.setHrMax(Double.parseDouble(text));
+            }
+            text = speedMaxText.getText();
+            if (text.isEmpty()) {
+                settings.setSpeedMax(Double.NaN);
+            } else {
+                settings.setSpeedMax(Double.parseDouble(text));
+            }
+            text = eleMaxText.getText();
+            if (text.isEmpty()) {
+                settings.setEleMax(Double.NaN);
+            } else {
+                settings.setEleMax(Double.parseDouble(text));
+            }
 
             settings.setZone1Val(Integer.parseInt(zone1ValText.getText()));
             settings.setZone2Val(Integer.parseInt(zone2ValText.getText()));

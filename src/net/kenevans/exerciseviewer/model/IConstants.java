@@ -29,11 +29,11 @@ public interface IConstants
     /** The title for the viewer. */
     public static final String TITLE = "Exercise Viewer";
     /** The version. */
-    public static final String VERSION = "2.2.1";
+    public static final String VERSION = "2.3.0";
     /** The author. */
     public static final String AUTHOR = "Written by Kenneth Evans, Jr.";
     /** The copyright */
-    public static final String COPYRIGHT = "Copyright (c) 2014-2021 Kenneth Evans";
+    public static final String COPYRIGHT = "Copyright (c) 2014-2022 Kenneth Evans";
     /** The company. */
     public static final String COMPANY = "kenevans.net";
     /** The title for the plot. */
@@ -86,27 +86,14 @@ public interface IConstants
     public static final String P_HR_ROLLING_AVG_COUNT = "hrRollingAvgCount";
     /*** The default value for the HR rolling average count. */
     public static final int D_HR_ROLLING_AVG_COUNT = 0;
-
-    // HR Zones
-    /** Index for HR */
-    public static int HR_ZONES_INDEX = 4;
-    /*** The preference name for the HR zones name. */
-    public static final String P_HR_ZONES_NAME = "hrZonesName";
-    /*** The default value for the HR zones name. */
-    public static final String D_HR_ZONES_NAME = "HR Zones";
-    /*** The preference name for the HR color. */
-    public static final String P_HR_ZONES_COLOR = "hrZonesColor";
-    /*** The default value for the HR zones color. */
-    public static final String D_HR_ZONES_COLOR = "0x000000";
-    /*** The preference name for the HR zones visibility. */
-    public static final String P_HR_ZONES_VISIBILITY = "hrZonesVisibility";
-    /*** The default value for the HR zones visibility. */
-    public static final boolean D_HR_ZONES_VISIBILITY = true;
-    /*** The preference name for the HR zones range axis. */
-    public static final String P_HR_RANGE_ZONES_AXIS = "hrZonesRangeAxis";
-    /*** The default value for the HR zones range axis. */
-    public static final String D_HR_RANGE_ZONES_AXIS = Integer
-        .toString(HR_INDEX);
+    /*** The preference name for the HR minimum y axis value. */
+    public static final String P_HR_MIN = "hrMin";
+    /*** The default value for the HR minimum y axis value. */
+    public static final double D_HR_MIN = Double.NaN;
+    /*** The preference name for the HR maximum y axis value. */
+    public static final String P_HR_MAX = "hrMax";
+    /*** The default value for the HR maximum y axis value. */
+    public static final double D_HR_MAX = Double.NaN;
 
     // Speed
     /** Index for SPEED */
@@ -136,6 +123,14 @@ public interface IConstants
     public static final String P_SPEED_ROLLING_AVG_COUNT = "speedRollingAvgCount";
     /*** The default value for the speed rolling average count. */
     public static final int D_SPEED_ROLLING_AVG_COUNT = 5;
+    /*** The preference name for the speed minimum y axis value. */
+    public static final String P_SPEED_MIN = "speedMin";
+    /*** The default value for the speed minimum y axis value. */
+    public static final double D_SPEED_MIN = Double.NaN;
+    /*** The preference name for the speed maximum y axis value. */
+    public static final String P_SPEED_MAX = "speedMax";
+    /*** The default value for the speed maximum y axis value. */
+    public static final double D_SPEED_MAX = Double.NaN;
 
     // Elevation
     /** Index for ELE */
@@ -160,6 +155,35 @@ public interface IConstants
     public static final String P_ELE_ROLLING_AVG_COUNT = "elevationRollingAvgCount";
     /*** The default value for the elevation rolling average count. */
     public static final int D_ELE_ROLLING_AVG_COUNT = 5;
+    /*** The preference name for the elevation minimum y axis value. */
+    public static final String P_ELE_MIN = "eleMin";
+    /*** The default value for the elevation minimum y axis value. */
+    public static final double D_ELE_MIN = Double.NaN;
+    /*** The preference name for the elevation maximum y axis value. */
+    public static final String P_ELE_MAX = "eleMax";
+    /*** The default value for the elevation maximum y axis value. */
+    public static final double D_ELE_MAX = Double.NaN;
+
+    // HR Zones
+    /** Index for HR */
+    public static int HR_ZONES_INDEX = 4;
+    /*** The preference name for the HR zones name. */
+    public static final String P_HR_ZONES_NAME = "hrZonesName";
+    /*** The default value for the HR zones name. */
+    public static final String D_HR_ZONES_NAME = "HR Zones";
+    /*** The preference name for the HR color. */
+    public static final String P_HR_ZONES_COLOR = "hrZonesColor";
+    /*** The default value for the HR zones color. */
+    public static final String D_HR_ZONES_COLOR = "0x000000";
+    /*** The preference name for the HR zones visibility. */
+    public static final String P_HR_ZONES_VISIBILITY = "hrZonesVisibility";
+    /*** The default value for the HR zones visibility. */
+    public static final boolean D_HR_ZONES_VISIBILITY = true;
+    /*** The preference name for the HR zones range axis. */
+    public static final String P_HR_RANGE_ZONES_AXIS = "hrZonesRangeAxis";
+    /*** The default value for the HR zones range axis. */
+    public static final String D_HR_RANGE_ZONES_AXIS = Integer
+        .toString(HR_INDEX);
 
     // Zones
     /*** The preference name for zone 1 value. */

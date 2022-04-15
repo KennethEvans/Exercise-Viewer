@@ -33,6 +33,9 @@ public class DataType implements IConstants
     protected Paint paint;
     protected boolean visible;
     protected int movingAvgCount;
+    
+    protected double minY;
+    protected double maxY;
 
     protected XYPlot plot;
     protected TimeSeriesCollection dataset;
@@ -51,9 +54,9 @@ public class DataType implements IConstants
      * @param movingAvgCount
      */
     public DataType(XYPlot plot, String name, int datasetIndex, Paint paint,
-        boolean visible, int movingAvgCount) {
+        boolean visible, int movingAvgCount, double minY, double maxY) {
         this(plot, name, datasetIndex, datasetIndex, paint, visible,
-            movingAvgCount);
+            movingAvgCount, minY, maxY);
     }
 
     /**
@@ -68,7 +71,7 @@ public class DataType implements IConstants
      * @param movingAvgCount
      */
     public DataType(XYPlot plot, String name, int datasetIndex, int axisIndex,
-        Paint paint, boolean visible, int movingAvgCount) {
+        Paint paint, boolean visible, int movingAvgCount, double minY, double maxY) {
         this.plot = plot;
         this.name = name;
         this.datasetIndex = datasetIndex;
@@ -76,6 +79,8 @@ public class DataType implements IConstants
         this.paint = paint;
         this.visible = visible;
         this.movingAvgCount = movingAvgCount;
+        this.minY = minY;
+        this.maxY = maxY;
     }
 
     /**

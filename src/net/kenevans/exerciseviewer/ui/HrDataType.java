@@ -35,8 +35,8 @@ public class HrDataType extends DataType
      * @see DataType#DataType(XYPlot, String, int, Paint, boolean)
      */
     public HrDataType(XYPlot plot, String name, int datasetIndex, Paint paint,
-        boolean visible, int movingAvgCount) {
-        super(plot, name, datasetIndex, paint, visible, movingAvgCount);
+        boolean visible, int movingAvgCount, double minY, double maxY) {
+        super(plot, name, datasetIndex, paint, visible, movingAvgCount, minY, maxY);
     }
 
     /**
@@ -52,9 +52,10 @@ public class HrDataType extends DataType
      * @see DataType#DataType(XYPlot, String, int, int, Paint, boolean)
      */
     public HrDataType(XYPlot plot, String name, int datasetIndex,
-        int axisIndex, Paint paint, boolean visible, int movingAvgCount) {
+        int axisIndex, Paint paint, boolean visible, int movingAvgCount,
+        double minY, double maxY) {
         super(plot, name, datasetIndex, axisIndex, paint, visible,
-            movingAvgCount);
+            movingAvgCount, minY, maxY);
     }
 
     /*
